@@ -10,6 +10,11 @@ import Terminal from './Terminal';
 import StatusBar from './StatusBar';
 import CommandPalette from './CommandPalette';
 import Toast from './Toast';
+import IntroLoading from './IntroLoading';
+import FeatureHighlighter from './FeatureHighlighter';
+import DevToolsWarning from './DevToolsWarning';
+import ContextMenu from './ContextMenu';
+import { playClickSound } from '@/lib/sound';
 import {
   Files,
   Search,
@@ -17,6 +22,7 @@ import {
   Mail,
   UserCircle,
   Settings,
+  Sparkles,
   Terminal as TerminalIcon,
 } from 'lucide-react';
 
@@ -36,6 +42,7 @@ function MobileBottomBar() {
   const items = [
     { id: 'explorer' as const, Icon: Files, label: 'Files' },
     { id: 'search' as const, Icon: Search, label: 'Search' },
+    { id: 'assistant' as const, Icon: Sparkles, label: 'AI' },
     { id: 'git' as const, Icon: GitBranch, label: 'Git' },
     { id: 'profile' as const, Icon: UserCircle, label: 'Profile' },
     { id: 'contact' as const, Icon: Mail, label: 'Contact' },
@@ -44,11 +51,10 @@ function MobileBottomBar() {
 
   return (
     <div
-      className={`flex items-center justify-around border-t flex-shrink-0 z-30 relative select-none transition-colors duration-150 ${
-        isLight
+      className={`flex items-center justify-around border-t flex-shrink-0 z-30 relative select-none transition-colors duration-150 ${isLight
           ? 'bg-[#f0f0f0] border-[#d8d8d8] text-[#333333]'
           : 'bg-[#252526] border-[#1e1e1e] text-[#858585]'
-      }`}
+        }`}
     >
       {items.map(({ id, Icon, label }) => {
         const isActive = activeSidebarPanel === id && sidebarVisible;
@@ -56,44 +62,48 @@ function MobileBottomBar() {
           <button
             key={id}
             type="button"
+            data-tour={id === 'explorer' ? 'explorer-btn' : id === 'assistant' ? 'assistant-btn' : id === 'settings' ? 'settings-btn' : id === 'contact' ? 'contact-btn' : id === 'profile' ? 'profile-btn' : undefined}
             onClick={() => {
+              playClickSound();
               if (isActive) {
                 toggleSidebar();
               } else {
                 setActiveSidebarPanel(id);
               }
             }}
-            className={`flex flex-col items-center gap-0.5 py-1.5 px-2 min-w-0 transition-colors duration-150 cursor-pointer ${
-              isActive
+            className={`flex flex-col items-center gap-0.5 py-1.5 px-2 min-w-0 transition-all duration-150 cursor-pointer active:scale-90 ${isActive
                 ? isLight
                   ? 'text-[#0060c0] font-semibold'
                   : 'text-white font-semibold'
                 : isLight
                   ? 'text-[#666666] hover:text-black'
                   : 'text-[#858585] hover:text-[#cccccc]'
-            }`}
+              }`}
             aria-label={label}
           >
-            <Icon className="w-4.5 h-4.5" strokeWidth={isActive ? 2.2 : 1.5} />
+            <Icon className={`w-4.5 h-4.5 transition-transform duration-150 ${isActive ? 'scale-110' : ''}`} strokeWidth={isActive ? 2.2 : 1.5} />
             <span className="text-[9.5px] tracking-tight">{label}</span>
           </button>
         );
       })}
       <button
         type="button"
-        onClick={toggleTerminal}
-        className={`flex flex-col items-center gap-0.5 py-1.5 px-2 transition-colors duration-150 cursor-pointer ${
-          terminalVisible
+        data-tour="terminal-btn"
+        onClick={() => {
+          playClickSound();
+          toggleTerminal();
+        }}
+        className={`flex flex-col items-center gap-0.5 py-1.5 px-2 transition-all duration-150 cursor-pointer active:scale-90 ${terminalVisible
             ? isLight
               ? 'text-[#0060c0] font-semibold'
               : 'text-white font-semibold'
             : isLight
               ? 'text-[#666666] hover:text-black'
               : 'text-[#858585] hover:text-[#cccccc]'
-        }`}
+          }`}
         aria-label="Terminal"
       >
-        <TerminalIcon className="w-4.5 h-4.5" strokeWidth={terminalVisible ? 2.2 : 1.5} />
+        <TerminalIcon className={`w-4.5 h-4.5 transition-transform duration-150 ${terminalVisible ? 'scale-110' : ''}`} strokeWidth={terminalVisible ? 2.2 : 1.5} />
         <span className="text-[9.5px] tracking-tight">Term</span>
       </button>
     </div>
@@ -116,7 +126,6 @@ export default function VSCodeLayout() {
 
   const isLight = theme === 'light';
 
-  // Apply theme class to document root and restore saved theme
   useEffect(() => {
     try {
       const saved = localStorage.getItem('portfolio-theme') as 'dark' | 'light' | null;
@@ -124,7 +133,7 @@ export default function VSCodeLayout() {
         usePortfolioStore.getState().setTheme(saved);
         return;
       }
-    } catch {}
+    } catch { }
 
     const root = document.documentElement;
     if (theme === 'light') {
@@ -138,7 +147,6 @@ export default function VSCodeLayout() {
     }
   }, [theme]);
 
-  // Global keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
@@ -202,7 +210,6 @@ export default function VSCodeLayout() {
     ]
   );
 
-  // Responsive mobile detection
   useEffect(() => {
     const check = () => {
       const mobile = window.innerWidth < 768;
@@ -221,9 +228,8 @@ export default function VSCodeLayout() {
   return (
     <div
       id="vscode-root"
-      className={`h-[100dvh] w-screen flex flex-col overflow-hidden transition-colors duration-150 ${
-        isLight ? 'bg-white text-[#24292f]' : 'bg-[#1e1e1e] text-[#cccccc]'
-      }`}
+      className={`h-[100dvh] w-screen flex flex-col overflow-hidden transition-colors duration-150 ${isLight ? 'bg-white text-[#24292f]' : 'bg-[#1e1e1e] text-[#cccccc]'
+        }`}
     >
       <TitleBar />
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
@@ -238,6 +244,10 @@ export default function VSCodeLayout() {
       {!isMobile && <StatusBar />}
       <CommandPalette />
       <Toast />
+      <IntroLoading />
+      <FeatureHighlighter />
+      <DevToolsWarning />
+      <ContextMenu />
     </div>
   );
 }

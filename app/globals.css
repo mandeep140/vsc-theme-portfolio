@@ -2,12 +2,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --font-mono: var(--font-mono);
-}
-
 :root {
   --radius: 0.625rem;
+  --font-code: Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace;
   --bg-editor: #1e1e1e;
   --bg-sidebar: #252526;
   --bg-activity: #333333;
@@ -49,20 +46,28 @@
     outline-color: transparent;
     box-sizing: border-box;
   }
+
   body {
     margin: 0;
     padding: 0;
     overflow: hidden;
     background: var(--bg-editor);
     color: var(--text-main);
-    font-family: var(--font-mono), 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
   }
+
+  code,
+  pre,
+  .font-mono,
+  .code-editor,
+  [data-code-font] {
+    font-family: var(--font-code) !important;
+  }
 }
 
-/* VS Code scrollbar styles */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -92,6 +97,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -106,12 +112,12 @@
   color: #000000;
 }
 
-/* Smooth Hardware-Accelerated Animations */
 @keyframes paletteIn {
   0% {
     opacity: 0;
     transform: scale(0.97) translateY(-6px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -126,6 +132,7 @@
   0% {
     transform: translate3d(-100%, 0, 0);
   }
+
   100% {
     transform: translate3d(0, 0, 0);
   }
@@ -137,8 +144,13 @@
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .animate-fadeIn {
@@ -150,6 +162,7 @@
     opacity: 0;
     transform: translate3d(16px, 0, 0) scale(0.95);
   }
+
   100% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
@@ -161,7 +174,6 @@
   will-change: transform, opacity;
 }
 
-/* Light Theme Component Overrides */
 .theme-light #vscode-root {
   background-color: #ffffff;
   color: #24292f;
@@ -233,6 +245,168 @@
 .theme-light .theme-active-item {
   background-color: #d6ebff !important;
   color: #004f9e !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpMobile {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideDownMobile {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-slideUpMobile {
+  animation: slideUpMobile 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes shakeRed {
+
+  0%,
+  100% {
+    transform: translateX(0);
+    background-color: transparent;
+  }
+
+  20%,
+  60% {
+    transform: translateX(-6px);
+    background-color: rgba(239, 68, 68, 0.25);
+  }
+
+  40%,
+  80% {
+    transform: translateX(6px);
+    background-color: rgba(239, 68, 68, 0.25);
+  }
+}
+
+.animate-shake-red {
+  animation: shakeRed 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes editorCursorBlink {
+
+  0%,
+  45% {
+    opacity: 1;
+  }
+
+  50%,
+  95% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.editor-blinking-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.15em;
+  margin-left: 1px;
+  vertical-align: -2px;
+  animation: editorCursorBlink 1s step-end infinite;
+}
+
+.touch-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.stagger-1 {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
+}
+
+.stagger-2 {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+
+.stagger-3 {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+.stagger-4 {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
 }
 
 @media (prefers-reduced-motion: reduce) {

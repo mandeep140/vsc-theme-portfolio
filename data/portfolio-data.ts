@@ -1,4 +1,3 @@
-// portfolio-data.ts -- All portfolio content structured as VS Code file system
 
 export interface FileNode {
   id: string;
@@ -60,7 +59,6 @@ const developer: Developer = {
   funFact: "I've been CTO of a company, a freelance backend dev, and a full-time CS student -- often all in the same semester.",
 };
 
-// Fun fact: This portfolio IS a working VS Code theme
 console.log(
   \`Hey there! I am \${developer.name}. Welcome to my codebase.\`
 );
@@ -452,7 +450,6 @@ const contactInfo = {
   availability: "Open to opportunities",
 };
 
-// Prefer email for serious inquiries
 
 console.log(
   "Thanks for checking out my portfolio!"
@@ -520,7 +517,6 @@ This portfolio is a creative way to showcase my work and skills.
   },
 ];
 
-// Helper to find a file by ID in the tree
 export function findFileById(nodes: FileNode[], id: string): FileNode | null {
   for (const node of nodes) {
     if (node.id === id) return node;
@@ -532,7 +528,6 @@ export function findFileById(nodes: FileNode[], id: string): FileNode | null {
   return null;
 }
 
-// Get all files (flat list)
 export function getAllFiles(nodes: FileNode[]): FileNode[] {
   const files: FileNode[] = [];
   for (const node of nodes) {
@@ -542,7 +537,6 @@ export function getAllFiles(nodes: FileNode[]): FileNode[] {
   return files;
 }
 
-// Get file path
 export function getFilePath(nodes: FileNode[], targetId: string, path: string[] = []): string[] {
   for (const node of nodes) {
     const currentPath = [...path, node.name];

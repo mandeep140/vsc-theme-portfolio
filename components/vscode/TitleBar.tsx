@@ -285,6 +285,10 @@ export default function TitleBar() {
         shortcut: 'Ctrl+Shift+X',
       },
       {
+        label: 'AI Copilot Chat',
+        action: () => setActiveSidebarPanel('assistant'),
+      },
+      {
         label: 'Developer Profile',
         action: () => setActiveSidebarPanel('profile'),
       },
@@ -446,12 +450,15 @@ export default function TitleBar() {
     ],
   };
 
-  // Mobile More menu containing all extended categories
   const mobileMoreItems: MenuItem[] = [
     {
       label: 'Command Palette...',
       action: toggleCommandPalette,
       shortcut: 'Ctrl+Shift+P',
+    },
+    {
+      label: 'AI Copilot Chat (Gemini)',
+      action: () => setActiveSidebarPanel('assistant'),
     },
     {
       label: 'Developer Profile',
@@ -511,7 +518,6 @@ export default function TitleBar() {
     },
   ];
 
-  // Desktop vs Mobile menu keys
   const visibleMenuKeys = isMobile
     ? ['File', 'Edit', 'View']
     : Object.keys(menus);
@@ -554,7 +560,6 @@ export default function TitleBar() {
           </div>
         ))}
 
-        {/* Mobile More Button */}
         {isMobile && (
           <div
             className="relative"
@@ -590,7 +595,6 @@ export default function TitleBar() {
 
       <div className="w-2 flex-shrink-0" />
 
-      {/* Floating Menu Dropdown */}
       {openMenu && (
         <div
           className="fixed z-[200]"

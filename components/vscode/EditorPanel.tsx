@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
-import { X, Eye, Code } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Eye, Code, Sparkles } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { findFileById, fileTree } from '@/data/portfolio-data';
+import WelcomeStats from './WelcomeStats';
+import { playClickSound } from '@/lib/sound';
 
 function EditorTabs() {
   const { openTabs, activeTabId, setActiveTab, closeTab, isMobile, theme } = usePortfolioStore();
@@ -26,7 +28,11 @@ function EditorTabs() {
         return (
           <div
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            data-tab-id={tab.id}
+            onClick={() => {
+              playClickSound();
+              setActiveTab(tab.id);
+            }}
             className={`group flex items-center gap-1.5 h-[35px] px-2 md:px-3 border-r cursor-pointer min-w-0 transition-colors duration-100 ${
               isActive
                 ? isLight
@@ -66,6 +72,7 @@ function EditorTabs() {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                playClickSound();
                 closeTab(tab.id);
               }}
               className={`ml-auto p-0.5 rounded transition-all flex-shrink-0 ${
@@ -100,7 +107,20 @@ const darkEditorTheme = buildEditorTheme(vscDarkPlus, '#858585');
 const lightEditorTheme = buildEditorTheme(vs, '#9e9e9e');
 
 function HighlightedCode({ content, language }: { content: string; language?: string }) {
-  const { editorFontSize, showLineNumbers, theme } = usePortfolioStore();
+  const { editorFontSize, showLineNumbers, wordWrap, cursorStyle, theme } = usePortfolioStore();
+  const lineHeight = Math.round(editorFontSize * 1.62);
+  const minLineNumberWidth = Math.max(46, Math.round(editorFontSize * 3.4));
+  const gutterWidth = showLineNumbers ? minLineNumberWidth + 16 : 16;
+  const charWidth = editorFontSize * 0.602;
+
+  const lines = content.split('\n');
+
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({
+    x: gutterWidth,
+    y: 16,
+  });
+  const [scrollOffset, setScrollOffset] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const isLight = theme === 'light';
   const normalizedLanguage =
     language === 'tsx'
@@ -114,9 +134,45 @@ function HighlightedCode({ content, language }: { content: string; language?: st
   const editorTheme = isLight ? lightEditorTheme : darkEditorTheme;
   const bgColor = isLight ? '#ffffff' : '#1e1e1e';
 
+  useEffect(() => {
+    const pre = containerRef.current?.querySelector('pre');
+    if (!pre) return;
+
+    const handleScroll = () => {
+      setScrollOffset({ left: pre.scrollLeft, top: pre.scrollTop });
+    };
+
+    pre.addEventListener('scroll', handleScroll, { passive: true });
+    return () => pre.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleCodeClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const pre = containerRef.current?.querySelector('pre');
+    if (!pre) return;
+
+    const rect = pre.getBoundingClientRect();
+    const clickX = e.clientX - rect.left + pre.scrollLeft;
+    const clickY = e.clientY - rect.top + pre.scrollTop;
+
+    const lineIdx = Math.max(0, Math.min(lines.length - 1, Math.floor((clickY - 16) / lineHeight)));
+    const lineText = lines[lineIdx] || '';
+    const colIdx = Math.max(0, Math.min(lineText.length, Math.round((clickX - gutterWidth) / charWidth)));
+
+    const targetX = gutterWidth + colIdx * charWidth;
+    const targetY = 16 + lineIdx * lineHeight;
+
+    setCursorPos({ x: targetX, y: targetY });
+  };
+
+  const renderCursorX = cursorPos.x - scrollOffset.left;
+  const renderCursorY = cursorPos.y - scrollOffset.top;
+  const isCursorVisible = renderCursorX >= 0 && renderCursorY >= 0;
+
   return (
     <div
-      className={`flex flex-1 min-h-0 overflow-hidden ${
+      ref={containerRef}
+      onClick={handleCodeClick}
+      className={`flex flex-1 min-h-0 overflow-hidden relative cursor-text animate-fadeIn ${
         isLight ? 'bg-white' : 'bg-[#1e1e1e]'
       }`}
     >
@@ -124,37 +180,57 @@ function HighlightedCode({ content, language }: { content: string; language?: st
         language={normalizedLanguage}
         style={editorTheme}
         showLineNumbers={showLineNumbers}
+        wrapLines={wordWrap}
+        wrapLongLines={wordWrap}
         lineNumberStyle={{
-          minWidth: '46px',
+          minWidth: `${minLineNumberWidth}px`,
           paddingRight: '16px',
           paddingLeft: '12px',
           color: isLight ? '#9e9e9e' : '#858585',
           textAlign: 'right',
           userSelect: 'none',
           fontSize: `${editorFontSize}px`,
-          lineHeight: '22px',
+          lineHeight: `${lineHeight}px`,
+          fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
         }}
         customStyle={{
           margin: 0,
-          padding: showLineNumbers ? '16px 16px 16px 0' : '16px',
+          padding: showLineNumbers ? `16px 16px 16px 0` : '16px',
           background: bgColor,
           fontSize: `${editorFontSize}px`,
-          lineHeight: '22px',
-          fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+          lineHeight: `${lineHeight}px`,
+          fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
           width: '100%',
           height: '100%',
           overflow: 'auto',
+          whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
+          wordBreak: wordWrap ? 'break-word' : 'normal',
         }}
         codeTagProps={{
           style: {
-            fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+            fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
             fontSize: `${editorFontSize}px`,
-            lineHeight: '22px',
+            lineHeight: `${lineHeight}px`,
+            whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
+            wordBreak: wordWrap ? 'break-word' : 'normal',
           },
         }}
       >
         {content}
       </SyntaxHighlighter>
+      {isCursorVisible && (
+        <span
+          className="editor-blinking-cursor absolute pointer-events-none transition-all duration-75"
+          style={{
+            backgroundColor: isLight ? '#007acc' : '#aeafad',
+            width: cursorStyle === 'block' ? `${Math.max(8, Math.round(editorFontSize * 0.58))}px` : '2px',
+            height: cursorStyle === 'underline' ? '2px' : `${lineHeight - 4}px`,
+            left: `${renderCursorX}px`,
+            top: cursorStyle === 'underline' ? `${renderCursorY + lineHeight - 6}px` : `${renderCursorY}px`,
+            opacity: cursorStyle === 'block' ? 0.75 : 1,
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -218,7 +294,7 @@ function renderMarkdown(md: string, isLight: boolean): string {
 }
 
 function MarkdownPreview({ content }: { content: string }) {
-  const { theme } = usePortfolioStore();
+  const { theme, editorFontSize } = usePortfolioStore();
   const isLight = theme === 'light';
   const html = renderMarkdown(content, isLight);
 
@@ -227,6 +303,7 @@ function MarkdownPreview({ content }: { content: string }) {
       className={`flex-1 min-h-0 overflow-auto p-6 md:p-10 leading-relaxed transition-colors duration-150 ${
         isLight ? 'bg-white text-[#24292f]' : 'bg-[#1e1e1e] text-[#cccccc]'
       }`}
+      style={{ fontSize: `${editorFontSize}px`, lineHeight: 1.65 }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -284,8 +361,10 @@ function ImagePreview({ file }: { file: { name: string; id: string } }) {
 }
 
 function Breadcrumbs({ path }: { path: string[] }) {
-  const { theme } = usePortfolioStore();
+  const { theme, breadcrumbsVisible } = usePortfolioStore();
   const isLight = theme === 'light';
+
+  if (!breadcrumbsVisible) return null;
 
   return (
     <div
@@ -318,18 +397,32 @@ function Breadcrumbs({ path }: { path: string[] }) {
 }
 
 function EmptyEditor() {
-  const { toggleSidebar, toggleTerminal, isMobile, theme } = usePortfolioStore();
+  const { toggleSidebar, toggleTerminal, isMobile, theme, startTour } = usePortfolioStore();
   const isLight = theme === 'light';
 
   return (
     <div
-      className={`flex-1 min-h-0 flex items-center justify-center transition-colors duration-150 ${
+      className={`relative flex-1 min-h-0 flex items-center justify-center transition-colors duration-150 animate-fadeIn ${
         isLight ? 'bg-white' : 'bg-[#1e1e1e]'
       }`}
     >
-      <div className="text-center px-4">
+      <button
+        type="button"
+        onClick={startTour}
+        className={`absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all duration-200 cursor-pointer border hover:-translate-y-0.5 active:scale-95 shadow-2xs ${
+          isLight
+            ? 'bg-[#f4f4f4] border-[#d8d8d8] text-[#555555] hover:border-[#007acc] hover:text-[#007acc]'
+            : 'bg-[#252526] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
+        }`}
+        title="Start Feature Tour"
+      >
+        <Sparkles className="w-3 h-3 text-[#007acc]" />
+        <span>Tour</span>
+      </button>
+
+      <div className="text-center px-4 max-w-md mx-auto">
         <div
-          className={`text-4xl md:text-6xl mb-4 font-mono select-none ${
+          className={`text-4xl md:text-6xl mb-4 font-mono select-none transition-transform duration-300 hover:scale-105 ${
             isLight ? 'opacity-15 text-black' : 'opacity-20 text-white'
           }`}
         >
@@ -339,13 +432,14 @@ function EmptyEditor() {
           Mandeep Nagar
         </p>
         <p className={`text-sm ${isLight ? 'text-[#6e7781]' : 'text-[#858585]'}`}>Full Stack Developer</p>
-        <div className="mt-6 flex flex-col items-center gap-2 text-xs">
+        <WelcomeStats isLight={isLight} />
+        <div className="mt-4 flex flex-col items-center gap-2 text-xs">
           {!isMobile && (
             <>
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className={`px-3.5 py-1.5 rounded transition-colors cursor-pointer border ${
+                className={`px-3.5 py-1.5 rounded transition-all duration-150 cursor-pointer border hover:-translate-y-0.5 active:scale-95 shadow-2xs ${
                   isLight
                     ? 'bg-[#f4f4f4] border-[#d4d4d4] text-[#24292f] hover:bg-[#eaeaea]'
                     : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#cccccc] hover:bg-[#37373d]'
@@ -356,7 +450,7 @@ function EmptyEditor() {
               <button
                 type="button"
                 onClick={toggleTerminal}
-                className={`px-3.5 py-1.5 rounded transition-colors cursor-pointer border ${
+                className={`px-3.5 py-1.5 rounded transition-all duration-150 cursor-pointer border hover:-translate-y-0.5 active:scale-95 shadow-2xs ${
                   isLight
                     ? 'bg-[#f4f4f4] border-[#d4d4d4] text-[#24292f] hover:bg-[#eaeaea]'
                     : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#cccccc] hover:bg-[#37373d]'
@@ -373,7 +467,8 @@ function EmptyEditor() {
 }
 
 export default function EditorPanel() {
-  const { activeTabId, openTabs, mdPreviewMode, toggleMdPreview, theme } = usePortfolioStore();
+  const { activeTabId, openTabs, mdPreviewMode, toggleMdPreview, theme, openFile } = usePortfolioStore();
+  const [isDragOverEditor, setIsDragOverEditor] = useState(false);
   const isLight = theme === 'light';
 
   const activeTab = openTabs.find((t) => t.id === activeTabId);
@@ -383,12 +478,54 @@ export default function EditorPanel() {
   const isBinary = file?.language === 'binary';
   const showPreview = isMarkdown && mdPreviewMode;
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverEditor(false);
+    const fileId = e.dataTransfer.getData('application/portfolio-file-id') || e.dataTransfer.getData('text/plain');
+    if (fileId) {
+      const targetFile = findFileById(fileTree, fileId);
+      if (targetFile && targetFile.type === 'file') {
+        playClickSound();
+        openFile(targetFile);
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    if (!isDragOverEditor) setIsDragOverEditor(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragOverEditor(false);
+  };
+
   return (
     <div
-      className={`flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden transition-colors duration-150 ${
-        isLight ? 'bg-white' : 'bg-[#1e1e1e]'
+      onDragOver={handleDragOver}
+      onDragEnter={() => setIsDragOverEditor(true)}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`relative flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden transition-all duration-150 ${
+        isDragOverEditor
+          ? isLight
+            ? 'bg-[#e6f4ff] ring-2 ring-inset ring-[#007acc]'
+            : 'bg-[#002f5e]/30 ring-2 ring-inset ring-[#007acc]'
+          : isLight
+            ? 'bg-white'
+            : 'bg-[#1e1e1e]'
       }`}
     >
+      {isDragOverEditor && (
+        <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center bg-[#007acc]/10 backdrop-blur-[2px] animate-fadeIn">
+          <div className="px-4 py-2 rounded-lg bg-[#007acc] text-white text-xs font-mono font-medium shadow-xl border border-white/20 animate-scaleIn">
+            Drop file to open in Editor
+          </div>
+        </div>
+      )}
       <EditorTabs />
       {activeTab && activeTab.path.length > 0 && <Breadcrumbs path={activeTab.path} />}
       {isMarkdown && (

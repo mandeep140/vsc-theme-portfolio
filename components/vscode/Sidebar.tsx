@@ -1,15 +1,18 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import {
   ChevronRight, ChevronDown, FileText, Folder, FolderOpen,
   Search, GitBranch, GitCommit, ExternalLink, File, Sun, Moon,
-  Mail, Globe, Phone, Minus, Plus, AlignJustify, X
+  Mail, Globe, Phone, Minus, Plus, AlignJustify, X,
+  RotateCcw, Sparkles, Trash2, WrapText, Sliders
 } from 'lucide-react';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { FileNode } from '@/data/portfolio-data';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
+import AssistantPanel from './AssistantPanel';
+import { playClickSound, playToggleSound, playToastSound } from '@/lib/sound';
 
 function getFileIconComponent(name: string) {
   if (name.endsWith('.tsx')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 text-center flex-shrink-0">TSX</span> };
@@ -21,19 +24,74 @@ function getFileIconComponent(name: string) {
   return { icon: <File className="w-4 h-4 text-[#858585] flex-shrink-0" /> };
 }
 
-function FileTreeItem({ node, depth }: { node: FileNode; depth: number }) {
+function FileTreeItem({
+  node,
+  depth,
+  shakingIds,
+  dragOverId,
+  setDragOverId,
+  draggedNodeId,
+  setDraggedNodeId,
+  onRejectDrop,
+}: {
+  node: FileNode;
+  depth: number;
+  shakingIds: Set<string>;
+  dragOverId: string | null;
+  setDragOverId: (id: string | null) => void;
+  draggedNodeId: string | null;
+  setDraggedNodeId: (id: string | null) => void;
+  onRejectDrop: (targetId: string, e?: React.DragEvent) => void;
+}) {
   const { expandedFolders, toggleFolder, openFile, activeTabId, theme } = usePortfolioStore();
   const isExpanded = expandedFolders.has(node.id);
   const isActive = activeTabId === node.id;
   const isLight = theme === 'light';
+  const isShaking = shakingIds.has(node.id);
+  const isDragOver = dragOverId === node.id;
 
   if (node.type === 'folder') {
     return (
-      <div>
+      <div
+        data-folder-id={node.id}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.dataTransfer.dropEffect = 'move';
+          if (dragOverId !== node.id) setDragOverId(node.id);
+        }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragOverId(node.id);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (dragOverId === node.id) setDragOverId(null);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragOverId(null);
+          onRejectDrop(node.id, e);
+        }}
+        className="transition-colors"
+      >
         <button
-          onClick={() => toggleFolder(node.id)}
-          className={`w-full flex items-center gap-1 py-[3px] px-2 text-[13px] transition-colors text-left ${isLight ? 'text-[#333333] hover:bg-[#e8e8e8]' : 'text-[#cccccc] hover:bg-[#2a2d2e]'
-            }`}
+          onClick={() => {
+            playToggleSound();
+            toggleFolder(node.id);
+          }}
+          className={`w-full flex items-center gap-1 py-[3px] px-2 text-[13px] transition-all text-left cursor-pointer ${
+            isShaking
+              ? 'animate-shake-red border border-red-500/80 rounded bg-red-500/20'
+              : isDragOver
+                ? 'bg-red-500/15 border border-dashed border-red-500/60 rounded text-red-400'
+                : isLight
+                  ? 'text-[#333333] hover:bg-[#e8e8e8]'
+                  : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+          }`}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
         >
           {isExpanded ? (
@@ -51,7 +109,17 @@ function FileTreeItem({ node, depth }: { node: FileNode; depth: number }) {
         {isExpanded && node.children && (
           <div>
             {node.children.map((child) => (
-              <FileTreeItem key={child.id} node={child} depth={depth + 1} />
+              <FileTreeItem
+                key={child.id}
+                node={child}
+                depth={depth + 1}
+                shakingIds={shakingIds}
+                dragOverId={dragOverId}
+                setDragOverId={setDragOverId}
+                draggedNodeId={draggedNodeId}
+                setDraggedNodeId={setDraggedNodeId}
+                onRejectDrop={onRejectDrop}
+              />
             ))}
           </div>
         )}
@@ -62,15 +130,57 @@ function FileTreeItem({ node, depth }: { node: FileNode; depth: number }) {
   const { icon } = getFileIconComponent(node.name);
   return (
     <button
-      onClick={() => openFile(node)}
-      className={`w-full flex items-center gap-1.5 py-[3px] px-2 text-[13px] transition-colors text-left ${isActive
-        ? isLight
-          ? 'bg-[#d6ebff] text-[#004f9e] font-medium'
-          : 'bg-[#37373d] text-white font-medium'
-        : isLight
-          ? 'text-[#333333] hover:bg-[#e8e8e8]'
-          : 'text-[#cccccc] hover:bg-[#2a2d2e]'
-        }`}
+      data-file-id={node.id}
+      draggable={true}
+      onDragStart={(e) => {
+        setDraggedNodeId(node.id);
+        e.dataTransfer.setData('text/plain', node.id);
+        e.dataTransfer.setData('application/portfolio-file-id', node.id);
+        e.dataTransfer.effectAllowed = 'copyMove';
+      }}
+      onDragEnd={() => {
+        setDraggedNodeId(null);
+        setDragOverId(null);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = 'move';
+        if (dragOverId !== node.id) setDragOverId(node.id);
+      }}
+      onDragEnter={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragOverId(node.id);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dragOverId === node.id) setDragOverId(null);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragOverId(null);
+        onRejectDrop(node.id, e);
+      }}
+      onClick={() => {
+        playClickSound();
+        openFile(node);
+      }}
+      className={`w-full flex items-center gap-1.5 py-[3px] px-2 text-[13px] transition-all text-left cursor-pointer ${
+        isShaking
+          ? 'animate-shake-red border border-red-500/80 rounded bg-red-500/20'
+          : isDragOver
+            ? 'bg-red-500/15 border border-dashed border-red-500/60 rounded'
+            : isActive
+              ? isLight
+                ? 'bg-[#d6ebff] text-[#004f9e] font-medium'
+                : 'bg-[#37373d] text-white font-medium'
+              : isLight
+                ? 'text-[#333333] hover:bg-[#e8e8e8]'
+                : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+      }`}
       style={{ paddingLeft: `${depth * 16 + 8}px` }}
       title={node.name}
     >
@@ -81,10 +191,38 @@ function FileTreeItem({ node, depth }: { node: FileNode; depth: number }) {
 }
 
 function ExplorerPanel() {
-  const { fileTree, theme } = usePortfolioStore();
+  const { fileTree, theme, showToast } = usePortfolioStore();
+  const [shakingIds, setShakingIds] = useState<Set<string>>(new Set());
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
   const isLight = theme === 'light';
+
+  const handleRejectDrop = (targetId: string, e?: React.DragEvent) => {
+    const sourceId = (e && (e.dataTransfer.getData('application/portfolio-file-id') || e.dataTransfer.getData('text/plain'))) || draggedNodeId;
+    const newShaking = new Set<string>();
+    if (targetId) newShaking.add(targetId);
+    if (sourceId) newShaking.add(sourceId);
+
+    setShakingIds(newShaking);
+    playToastSound();
+    showToast("you can change file places in read only mode, don't try or i need to build that also :')");
+    setTimeout(() => {
+      setShakingIds(new Set());
+    }, 480);
+  };
+
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div
+      className="flex flex-col h-full min-h-0"
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        handleRejectDrop('root-explorer', e);
+      }}
+    >
       <div className={`flex items-center justify-between px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
         }`}>
         <span>Explorer</span>
@@ -95,7 +233,17 @@ function ExplorerPanel() {
       </div>
       <div className="flex-1 overflow-y-auto overflow-x-hidden pb-4 min-h-0">
         {fileTree.map((node) => (
-          <FileTreeItem key={node.id} node={node} depth={0} />
+          <FileTreeItem
+            key={node.id}
+            node={node}
+            depth={0}
+            shakingIds={shakingIds}
+            dragOverId={dragOverId}
+            setDragOverId={setDragOverId}
+            draggedNodeId={draggedNodeId}
+            setDraggedNodeId={setDraggedNodeId}
+            onRejectDrop={handleRejectDrop}
+          />
         ))}
       </div>
     </div>
@@ -317,7 +465,6 @@ function ProfilePanel() {
         Profile
       </div>
       <div className="px-4 py-4">
-        {/* Avatar */}
         <div className="flex flex-col items-center mb-5">
           <div className={`w-16 h-16 rounded-full overflow-hidden bg-[#007fd4] flex items-center justify-center text-white font-bold text-xl mb-3 shadow-md ring-2 ring-[#007fd4] ring-offset-2 ${isLight ? 'ring-offset-[#f3f3f3]' : 'ring-offset-[#252526]'
             }`}>
@@ -331,7 +478,6 @@ function ProfilePanel() {
           </div>
         </div>
 
-        {/* Bio */}
         <div className="mb-4">
           <p className={`text-[11px] uppercase tracking-wider mb-1.5 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
           <p className={`text-[12px] leading-relaxed ${isLight ? 'text-[#333333]' : 'text-[#cccccc]'}`}>
@@ -339,7 +485,6 @@ function ProfilePanel() {
           </p>
         </div>
 
-        {/* Details */}
         <div className="space-y-2.5 mb-4">
           <p className={`text-[11px] uppercase tracking-wider mb-1.5 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Details</p>
           <div className="flex items-center gap-2 text-[12px]">
@@ -360,7 +505,6 @@ function ProfilePanel() {
           </div>
         </div>
 
-        {/* Tech stack */}
         <div className="mb-4">
           <p className={`text-[11px] uppercase tracking-wider mb-1.5 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Primary Stack</p>
           <div className="flex flex-wrap gap-1.5">
@@ -378,7 +522,6 @@ function ProfilePanel() {
           </div>
         </div>
 
-        {/* Links */}
         <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
           <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Links</p>
           <div className="space-y-1.5">
@@ -414,8 +557,34 @@ function ProfilePanel() {
 }
 
 function SettingsPanel() {
-  const { theme, setTheme, editorFontSize, setEditorFontSize, showLineNumbers, toggleLineNumbers, showToast } = usePortfolioStore();
+  const {
+    theme, setTheme,
+    editorFontSize, setEditorFontSize,
+    showLineNumbers, toggleLineNumbers,
+    wordWrap, toggleWordWrap,
+    tabSize, setTabSize,
+    cursorStyle, setCursorStyle,
+    breadcrumbsVisible, toggleBreadcrumbs,
+    soundEnabled, toggleSound,
+    soundVolume, setSoundVolume,
+    startTour, resetSettings, showToast
+  } = usePortfolioStore();
   const isLight = theme === 'light';
+
+  const handleClearChat = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('portfolio_chat_history');
+      } catch {}
+    }
+    playToastSound();
+    showToast('AI Chat history cleared');
+  };
+
+  const handleResetAll = () => {
+    resetSettings();
+    showToast('Settings reset to defaults');
+  };
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-y-auto">
@@ -425,11 +594,9 @@ function SettingsPanel() {
       </div>
 
       <div className="px-4 py-2 space-y-6">
-        {/* Appearance */}
         <div>
           <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Appearance</p>
           <div className="space-y-3">
-            {/* Color Theme */}
             <div>
               <p className={`text-[12px] mb-2 font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Color Theme</p>
               <div className="flex gap-2">
@@ -464,49 +631,70 @@ function SettingsPanel() {
           </div>
         </div>
 
-        {/* Editor */}
         <div>
-          <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Editor</p>
+          <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Editor & Typography</p>
           <div className="space-y-4">
-            {/* Font Size */}
-            <div>
+            <div className={`p-2.5 rounded border ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'}`}>
               <div className="flex items-center justify-between mb-2">
-                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Font Size</p>
-                <span className={`text-[12px] font-mono ${isLight ? 'text-[#666666]' : 'text-[#858585]'}`}>{editorFontSize}px</span>
+                <div>
+                  <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Editor Font Size</p>
+                  <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Scales code, syntax & lines</p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[12px] font-mono font-semibold px-2 py-0.5 rounded ${isLight ? 'bg-[#f0f0f0] text-[#0060c0]' : 'bg-[#1e1e1e] text-[#007fd4]'}`}>
+                    {editorFontSize}px
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-2">
                 <button
                   type="button"
                   onClick={() => setEditorFontSize(editorFontSize - 1)}
-                  className={`w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer ${isLight
-                    ? 'bg-white border border-[#cecece] text-[#333333] hover:bg-[#e8e8e8]'
-                    : 'bg-[#2d2d2d] text-[#cccccc] hover:bg-[#3c3c3c]'
+                  disabled={editorFontSize <= 10}
+                  className={`w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isLight
+                    ? 'bg-[#f4f4f4] border border-[#cecece] text-[#333333] hover:bg-[#e8e8e8]'
+                    : 'bg-[#1e1e1e] border border-[#3c3c3c] text-[#cccccc] hover:bg-[#333333]'
                     }`}
                   aria-label="Decrease font size"
                 >
                   <Minus className="w-3 h-3" />
                 </button>
-                <div className={`flex-1 h-1.5 rounded-full relative overflow-hidden ${isLight ? 'bg-[#d8d8d8]' : 'bg-[#3c3c3c]'}`}>
-                  <div
-                    className="h-full bg-[#007fd4] rounded-full transition-all duration-150"
-                    style={{ width: `${Math.max(0, Math.min(100, ((editorFontSize - 10) / 14) * 100))}%` }}
-                  />
-                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="24"
+                  step="1"
+                  value={editorFontSize}
+                  onChange={(e) => setEditorFontSize(parseInt(e.target.value, 10))}
+                  className="flex-1 h-1.5 bg-[#4a4a4a] rounded-lg appearance-none cursor-pointer accent-[#007acc]"
+                  aria-label="Font size slider"
+                />
                 <button
                   type="button"
                   onClick={() => setEditorFontSize(editorFontSize + 1)}
-                  className={`w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer ${isLight
-                    ? 'bg-white border border-[#cecece] text-[#333333] hover:bg-[#e8e8e8]'
-                    : 'bg-[#2d2d2d] text-[#cccccc] hover:bg-[#3c3c3c]'
+                  disabled={editorFontSize >= 24}
+                  className={`w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isLight
+                    ? 'bg-[#f4f4f4] border border-[#cecece] text-[#333333] hover:bg-[#e8e8e8]'
+                    : 'bg-[#1e1e1e] border border-[#3c3c3c] text-[#cccccc] hover:bg-[#333333]'
                     }`}
                   aria-label="Increase font size"
                 >
                   <Plus className="w-3 h-3" />
                 </button>
               </div>
+              <div className="flex justify-between items-center text-[10px] opacity-60 font-mono">
+                <span>10px (Compact)</span>
+                <button
+                  type="button"
+                  onClick={() => setEditorFontSize(13)}
+                  className="hover:underline cursor-pointer opacity-90 text-[#007acc]"
+                >
+                  Reset (13px)
+                </button>
+                <span>24px (Large)</span>
+              </div>
             </div>
 
-            {/* Line Numbers Switch */}
             <div className={`p-2.5 rounded border flex items-center justify-between ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'
               }`}>
               <div>
@@ -528,10 +716,170 @@ function SettingsPanel() {
                 />
               </button>
             </div>
+
+            <div className={`p-2.5 rounded border flex items-center justify-between ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'
+              }`}>
+              <div>
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Word Wrap</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>
+                  {wordWrap ? 'Wrap long lines to viewport' : 'Horizontal code scrolling'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleWordWrap}
+                className={`w-11 h-6 rounded-full transition-colors duration-200 relative flex items-center px-0.5 cursor-pointer flex-shrink-0 ${wordWrap ? 'bg-[#007acc]' : isLight ? 'bg-[#cccccc]' : 'bg-[#4a4a4a]'
+                  }`}
+                aria-label="Toggle word wrap"
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${wordWrap ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                />
+              </button>
+            </div>
+
+            <div className={`p-2.5 rounded border flex items-center justify-between ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'
+              }`}>
+              <div>
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Breadcrumbs</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>
+                  {breadcrumbsVisible ? 'File path bar visible' : 'File path bar hidden'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleBreadcrumbs}
+                className={`w-11 h-6 rounded-full transition-colors duration-200 relative flex items-center px-0.5 cursor-pointer flex-shrink-0 ${breadcrumbsVisible ? 'bg-[#007acc]' : isLight ? 'bg-[#cccccc]' : 'bg-[#4a4a4a]'
+                  }`}
+                aria-label="Toggle breadcrumbs"
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${breadcrumbsVisible ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                />
+              </button>
+            </div>
+
+
+
+            <div className={`p-2.5 rounded border ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Cursor Style</p>
+                <span className={`text-[11px] font-mono capitalize ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>{cursorStyle}</span>
+              </div>
+              <div className="flex gap-1.5">
+                {(['line', 'block', 'underline'] as const).map((style) => (
+                  <button
+                    key={style}
+                    type="button"
+                    onClick={() => setCursorStyle(style)}
+                    className={`flex-1 py-1.5 text-xs rounded border capitalize transition-all cursor-pointer ${cursorStyle === style
+                      ? 'bg-[#007acc] text-white border-[#007acc] font-semibold shadow-xs'
+                      : isLight
+                        ? 'bg-[#f4f4f4] text-[#444444] border-[#d0d0d0] hover:bg-[#eaeaea]'
+                        : 'bg-[#1e1e1e] text-[#aaaaaa] border-[#3c3c3c] hover:bg-[#333333]'
+                      }`}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Terminal */}
+        <div>
+          <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Audio & Effects</p>
+          <div className="space-y-4">
+            <div className={`p-2.5 rounded border flex items-center justify-between ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'
+              }`}>
+              <div>
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Sound Effects</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>
+                  {soundEnabled ? 'UI and typing audio enabled' : 'UI audio muted'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleSound}
+                className={`w-11 h-6 rounded-full transition-colors duration-200 relative flex items-center px-0.5 cursor-pointer flex-shrink-0 ${soundEnabled ? 'bg-[#007acc]' : isLight ? 'bg-[#cccccc]' : 'bg-[#4a4a4a]'
+                  }`}
+                aria-label="Toggle sound effects"
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${soundEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                />
+              </button>
+            </div>
+
+            {soundEnabled && (
+              <div className={`p-2.5 rounded border ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Audio Volume</p>
+                  <span className={`text-[12px] font-mono font-medium ${isLight ? 'text-[#0060c0]' : 'text-[#007fd4]'}`}>{soundVolume}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={soundVolume}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setSoundVolume(val);
+                    playClickSound();
+                  }}
+                  className="w-full h-1.5 bg-[#4a4a4a] rounded-lg appearance-none cursor-pointer accent-[#007acc]"
+                  aria-label="Adjust sound volume"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Actions & Diagnostics</p>
+          <div className="space-y-2.5">
+            <button
+              type="button"
+              onClick={startTour}
+              className={`w-full py-2 px-3 rounded border text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer ${isLight
+                ? 'bg-white border-[#d0d0d0] text-[#333333] hover:bg-[#f0f0f0]'
+                : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#cccccc] hover:bg-[#37373d]'
+                }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#007acc]" />
+              Replay Feature Tour
+            </button>
+
+            <button
+              type="button"
+              onClick={handleClearChat}
+              className={`w-full py-2 px-3 rounded border text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer ${isLight
+                ? 'bg-white border-[#d0d0d0] text-[#333333] hover:bg-[#f0f0f0]'
+                : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#cccccc] hover:bg-[#37373d]'
+                }`}
+            >
+              <Trash2 className="w-3.5 h-3.5 text-amber-500" />
+              Clear AI Chat History
+            </button>
+
+            <button
+              type="button"
+              onClick={handleResetAll}
+              className={`w-full py-2 px-3 rounded border text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer ${isLight
+                ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
+                : 'bg-rose-950/30 border-rose-800/40 text-rose-400 hover:bg-rose-950/60'
+                }`}
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset All Settings to Defaults
+            </button>
+          </div>
+        </div>
+
         <div>
           <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Terminal</p>
           <div className="space-y-3">
@@ -546,12 +894,11 @@ function SettingsPanel() {
           </div>
         </div>
 
-        {/* About */}
         <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
           <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
           <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>VS Code Portfolio</p>
           <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 1.0.0</p>
-          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Next.js 16 / React 19</p>
+          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Next.js 16 / React 19 / Turbopack</p>
           <button
             type="button"
             onClick={() => showToast('Built by Mandeep Nagar with Next.js, TypeScript, and Tailwind CSS')}
@@ -601,7 +948,6 @@ export default function Sidebar() {
         }`}
       style={{ width: isMobile ? '100%' : sidebarWidth }}
     >
-      {/* Mobile close bar */}
       {isMobile && (
         <div className={`flex items-center justify-between px-3 py-2 border-b flex-shrink-0 ${isLight ? 'bg-[#e8e8e8] border-[#d8d8d8]' : 'bg-[#1f1f1f] border-[#2d2d2d]'
           }`}>
@@ -627,10 +973,10 @@ export default function Sidebar() {
       {activeSidebarPanel === 'contact' && <ContactPanel />}
       {activeSidebarPanel === 'profile' && <ProfilePanel />}
       {activeSidebarPanel === 'settings' && <SettingsPanel />}
+      {activeSidebarPanel === 'assistant' && <AssistantPanel />}
     </div>
   );
 
-  // Mobile drawer overlay
   if (isMobile) {
     if (!sidebarVisible) return null;
     return (
@@ -658,7 +1004,6 @@ export default function Sidebar() {
       >
         {sidebarContent}
       </div>
-      {/* Resize handle */}
       {sidebarVisible && (
         <div
           onMouseDown={handleMouseDown}

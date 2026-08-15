@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { X, Plus, Minus, Maximize2, Trash2 } from 'lucide-react';
+import { playKeypressSound, playSuccessSound, playClickSound } from '@/lib/sound';
 
 const BASE_COMMANDS = [
   'help',
@@ -16,6 +17,8 @@ const BASE_COMMANDS = [
   'projects',
   'contact',
   'experience',
+  'stats',
+  'ai',
   'neofetch',
   'date',
   'pwd',
@@ -53,7 +56,6 @@ function getContextualSuggestions(input: string): string[] {
   const lower = input.toLowerCase();
   if (!lower) return [];
 
-  // "cd <dir>"
   if (lower === 'cd' || lower.startsWith('cd ')) {
     const after = lower.startsWith('cd ') ? lower.slice(3).trim() : '';
     const matches = FOLDER_NAMES.filter((d) => d.toLowerCase().startsWith(after));
@@ -62,7 +64,6 @@ function getContextualSuggestions(input: string): string[] {
     }
   }
 
-  // "cat <file>" or "open <file>"
   if (lower.startsWith('cat ') || lower.startsWith('open ')) {
     const prefix = lower.startsWith('open ') ? 'open' : 'cat';
     const after = lower.slice(prefix.length + 1).trim();
@@ -72,7 +73,6 @@ function getContextualSuggestions(input: string): string[] {
     }
   }
 
-  // "ls <dir>"
   if (lower.startsWith('ls ')) {
     const after = lower.slice(3).trim();
     const matches = FOLDER_NAMES.filter(
@@ -83,7 +83,6 @@ function getContextualSuggestions(input: string): string[] {
     }
   }
 
-  // Multi-word and base command matching
   return BASE_COMMANDS.filter(
     (cmd) => cmd.toLowerCase().startsWith(lower) && cmd.toLowerCase() !== lower
   );
@@ -118,17 +117,14 @@ export default function Terminal() {
   const resizeStartY = useRef(0);
   const resizeStartH = useRef(0);
 
-  // Compute ghost suggestion
   const suggestions = dismissedSuggestion ? [] : getContextualSuggestions(terminalInput);
   const topSuggestion = suggestions[0] ?? '';
 
-  // Ghost suffix calculation using exact character position
   const ghostSuffix =
     topSuggestion && terminalInput.length > 0 && topSuggestion.toLowerCase().startsWith(terminalInput.toLowerCase())
       ? topSuggestion.slice(terminalInput.length)
       : '';
 
-  // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       requestAnimationFrame(() => {
@@ -139,7 +135,6 @@ export default function Terminal() {
     }
   }, [terminalHistory]);
 
-  // Focus on visible
   useEffect(() => {
     if (terminalVisible && inputRef.current) {
       const timer = setTimeout(() => inputRef.current?.focus(), 80);
@@ -152,7 +147,7 @@ export default function Terminal() {
     const val = terminalInput.trim();
     if (!val) return;
 
-    // If user presses enter on partial input with top suggestion active, complete it
+    playSuccessSound();
     const finalCmd =
       topSuggestion && val.toLowerCase() === topSuggestion.slice(0, val.length).toLowerCase() && ghostSuffix
         ? topSuggestion
@@ -165,7 +160,6 @@ export default function Terminal() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Tab: accept full suggestion
     if (e.key === 'Tab') {
       e.preventDefault();
       if (topSuggestion) {
@@ -175,7 +169,6 @@ export default function Terminal() {
       return;
     }
 
-    // ArrowRight at end of input: accept ghost text
     if (e.key === 'ArrowRight') {
       const inp = inputRef.current;
       if (inp && ghostSuffix && inp.selectionStart === terminalInput.length) {
@@ -186,14 +179,12 @@ export default function Terminal() {
       }
     }
 
-    // Escape: dismiss suggestion ONLY (do NOT erase typed text)
     if (e.key === 'Escape') {
       e.stopPropagation();
       setDismissedSuggestion(true);
       return;
     }
 
-    // History navigation
     if (e.key === 'ArrowUp') {
       e.preventDefault();
       const next = Math.min(historyIndex + 1, commandHistory.length - 1);
@@ -214,7 +205,6 @@ export default function Terminal() {
     }
   };
 
-  // Resize handler with mouse & touch support
   const handleResizeMouseDown = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
@@ -260,9 +250,8 @@ export default function Terminal() {
   return (
     <div
       ref={containerRef}
-      className={`flex flex-col flex-shrink-0 overflow-hidden transition-colors duration-150 ${
-        isLight ? 'bg-white' : 'bg-[#1e1e1e]'
-      }`}
+      className={`flex flex-col flex-shrink-0 overflow-hidden transition-colors duration-150 ${isLight ? 'bg-white' : 'bg-[#1e1e1e]'
+        }`}
       style={{
         height: terminalVisible ? (isMobile ? '210px' : `${terminalHeight}px`) : 0,
         borderTop: terminalVisible
@@ -274,8 +263,8 @@ export default function Terminal() {
         willChange: 'height',
         opacity: terminalVisible ? 1 : 0,
       }}
+      data-terminal="true"
     >
-      {/* Top resize handle */}
       {!isMobile && terminalVisible && (
         <div
           onMouseDown={handleResizeMouseDown}
@@ -285,43 +274,37 @@ export default function Terminal() {
         />
       )}
 
-      {/* Terminal Tab Bar */}
       <div
-        className={`flex items-center h-[35px] border-b flex-shrink-0 min-w-0 transition-colors duration-150 ${
-          isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'
-        }`}
+        className={`flex items-center h-[35px] border-b flex-shrink-0 min-w-0 transition-colors duration-150 ${isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'
+          }`}
       >
         <div className="flex items-center px-1 md:px-2 overflow-x-auto scrollbar-hide">
           {(['PROBLEMS', 'OUTPUT', 'DEBUG CONSOLE'] as const).map((tab) => (
             <span
               key={tab}
               onClick={() => showToast(`${tab} panel is under construction`)}
-              className={`flex items-center px-2 py-0.5 text-[11px] md:text-[12px] cursor-pointer whitespace-nowrap h-[35px] transition-colors ${
-                isLight ? 'text-[#6e7781] hover:text-[#111111]' : 'text-[#858585] hover:text-[#cccccc]'
-              }`}
+              className={`flex items-center px-2 py-0.5 text-[11px] md:text-[12px] cursor-pointer whitespace-nowrap h-[35px] transition-colors ${isLight ? 'text-[#6e7781] hover:text-[#111111]' : 'text-[#858585] hover:text-[#cccccc]'
+                }`}
             >
               {tab}
             </span>
           ))}
           <span
-            className={`flex items-center px-2.5 py-0.5 text-[11px] md:text-[12px] whitespace-nowrap h-[35px] font-medium border-t-[2px] ${
-              isLight
+            className={`flex items-center px-2.5 py-0.5 text-[11px] md:text-[12px] whitespace-nowrap h-[35px] font-medium border-t-[2px] ${isLight
                 ? 'bg-white border-t-[#007acc] text-[#111111]'
                 : 'bg-[#1e1e1e] border-t-[#007fd4] text-[#cccccc]'
-            }`}
+              }`}
           >
             TERMINAL
           </span>
         </div>
 
-        {/* Terminal Header Action Buttons */}
         <div className="ml-auto flex items-center gap-0.5 px-1 md:px-2 flex-shrink-0">
           <button
             type="button"
             onClick={() => showToast('Single terminal instance is active.')}
-            className={`p-1 rounded transition-colors hidden md:block ${
-              isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
-            }`}
+            className={`p-1 rounded transition-colors hidden md:block ${isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
+              }`}
             title="New Terminal"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -329,9 +312,8 @@ export default function Terminal() {
           <button
             type="button"
             onClick={() => showToast('Split terminal is not available in viewer mode.')}
-            className={`p-1 rounded transition-colors hidden md:block ${
-              isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
-            }`}
+            className={`p-1 rounded transition-colors hidden md:block ${isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
+              }`}
             title="Split Terminal"
           >
             <Minus className="w-3.5 h-3.5" />
@@ -339,9 +321,8 @@ export default function Terminal() {
           <button
             type="button"
             onClick={() => showToast('Terminal viewport maximized to full width.')}
-            className={`p-1 rounded transition-colors hidden md:block ${
-              isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
-            }`}
+            className={`p-1 rounded transition-colors hidden md:block ${isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
+              }`}
             title="Maximize Terminal"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -349,9 +330,8 @@ export default function Terminal() {
           <button
             type="button"
             onClick={() => usePortfolioStore.getState().clearTerminal()}
-            className={`p-1 rounded transition-colors hidden md:block ${
-              isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
-            }`}
+            className={`p-1 rounded transition-colors hidden md:block ${isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
+              }`}
             title="Clear Terminal (Ctrl+L)"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -359,9 +339,8 @@ export default function Terminal() {
           <button
             type="button"
             onClick={toggleTerminal}
-            className={`p-1 rounded transition-colors ${
-              isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
-            }`}
+            className={`p-1 rounded transition-colors ${isLight ? 'text-[#6e7781] hover:bg-[#e0e0e0] hover:text-black' : 'text-[#858585] hover:bg-[#505050] hover:text-white'
+              }`}
             title="Close Terminal (Ctrl+`)"
           >
             <X className="w-3.5 h-3.5" />
@@ -369,7 +348,6 @@ export default function Terminal() {
         </div>
       </div>
 
-      {/* Terminal Screen Output */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-2 font-mono text-[12px] md:text-[13px] leading-[20px] min-h-0"
@@ -413,17 +391,14 @@ export default function Terminal() {
           </div>
         ))}
 
-        {/* Input line with inline Ghost text */}
         <div className="flex items-center min-h-[20px]">
           <span
-            className={`whitespace-pre flex-shrink-0 select-none ${
-              isLight ? 'text-[#008000] font-semibold' : 'text-[#6a9955]'
-            }`}
+            className={`whitespace-pre flex-shrink-0 select-none ${isLight ? 'text-[#008000] font-semibold' : 'text-[#6a9955]'
+              }`}
           >
             {currentDir} $
           </span>{' '}
           <div className="relative flex-1 min-w-0 ml-1.5 flex items-center">
-            {/* Inline Ghost overlay */}
             {ghostSuffix && (
               <div
                 className="absolute inset-0 pointer-events-none font-mono text-[12px] md:text-[13px] leading-[20px] flex items-center overflow-hidden"
@@ -438,14 +413,14 @@ export default function Terminal() {
                 ref={inputRef}
                 value={terminalInput}
                 onChange={(e) => {
+                  playKeypressSound();
                   setTerminalInput(e.target.value);
                   setHistoryIndex(-1);
                   setDismissedSuggestion(false);
                 }}
                 onKeyDown={handleKeyDown}
-                className={`w-full bg-transparent border-none outline-none font-mono text-[12px] md:text-[13px] leading-[20px] ${
-                  isLight ? 'text-[#24292f] caret-[#24292f]' : 'text-[#cccccc] caret-white'
-                }`}
+                className={`w-full bg-transparent border-none outline-none font-mono text-[12px] md:text-[13px] leading-[20px] ${isLight ? 'text-[#24292f] caret-[#24292f]' : 'text-[#cccccc] caret-white'
+                  }`}
                 spellCheck={false}
                 autoComplete="off"
                 autoCorrect="off"

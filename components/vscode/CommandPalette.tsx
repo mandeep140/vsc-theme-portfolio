@@ -18,7 +18,6 @@ export default function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Get all files for quick open
   const allFiles = useMemo(() => {
     const files: { name: string; id: string; path: string[] }[] = [];
     const traverse = (nodes: typeof fileTree, path: string[] = []) => {
@@ -36,6 +35,7 @@ export default function CommandPalette() {
 
   const commands: CommandItem[] = useMemo(() => [
     { label: 'Toggle Sidebar', description: 'Ctrl+B', action: toggleSidebar, category: 'command' },
+    { label: 'Ask AI Copilot (Gemini)', description: 'Chat with Mandeep\'s AI assistant', action: () => usePortfolioStore.getState().setActiveSidebarPanel('assistant'), category: 'command' },
     { label: 'Toggle Terminal', description: 'Ctrl+`', action: toggleTerminal, category: 'command' },
     { label: 'Toggle Markdown Preview', description: 'Ctrl+Shift+V', action: toggleMdPreview, category: 'command' },
     { label: 'Clear Terminal', description: '', action: clearTerminal, category: 'command' },
@@ -58,12 +58,10 @@ export default function CommandPalette() {
       )
     : commands;
 
-  // Reset selection when query changes
   useEffect(() => {
     setSelectedIndex(0);
   }, [query]);
 
-  // Focus input when opened
   useEffect(() => {
     if (commandPaletteOpen) {
       setQuery('');
@@ -72,7 +70,6 @@ export default function CommandPalette() {
     }
   }, [commandPaletteOpen]);
 
-  // Scroll selected item into view
   useEffect(() => {
     if (listRef.current) {
       const selected = listRef.current.children[selectedIndex] as HTMLElement;
@@ -105,15 +102,12 @@ export default function CommandPalette() {
 
   return (
     <div className="fixed inset-0 z-[200] flex justify-center pt-[15%]">
-      {/* Backdrop */}
       <div
         className="absolute inset-0"
         onClick={() => setCommandPaletteOpen(false)}
       />
 
-      {/* Palette */}
       <div className="relative w-[90vw] max-w-[600px] bg-[#252526] border border-[#454545] rounded-lg shadow-2xl overflow-hidden animate-paletteIn">
-        {/* Input */}
         <div className="flex items-center px-3 py-2 border-b border-[#3c3c3c]">
           <span className="text-[#858585] mr-2 text-sm">
             {query.startsWith('>') ? '' : query ? '' : '>'}
@@ -130,7 +124,6 @@ export default function CommandPalette() {
           />
         </div>
 
-        {/* Results */}
         <div
           ref={listRef}
           className="max-h-[300px] overflow-y-auto py-1"

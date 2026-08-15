@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { FileNode, findFileById, getFilePath, fileTree } from '@/data/portfolio-data';
+import { playToastSound, playToggleSound } from '@/lib/sound';
 
 export interface Tab {
   id: string;
@@ -9,24 +10,22 @@ export interface Tab {
 }
 
 interface PortfolioStore {
-  // File explorer
   fileTree: FileNode[];
   expandedFolders: Set<string>;
   toggleFolder: (id: string) => void;
 
-  // Editor tabs
   openTabs: Tab[];
   activeTabId: string | null;
   setActiveTabId: (id: string | null) => void;
   openFile: (file: FileNode) => void;
   closeTab: (id: string) => void;
+  closeOtherTabs: (id: string) => void;
+  closeAllTabs: () => void;
   setActiveTab: (id: string) => void;
 
-  // Markdown preview
   mdPreviewMode: boolean;
   toggleMdPreview: () => void;
 
-  // Terminal
   terminalHistory: TerminalLine[];
   terminalInput: string;
   currentDir: string;
@@ -34,48 +33,58 @@ interface PortfolioStore {
   executeCommand: (command: string) => void;
   clearTerminal: () => void;
 
-  // Sidebar
-  activeSidebarPanel: 'explorer' | 'search' | 'git' | 'extensions' | 'contact' | 'profile' | 'settings';
+  activeSidebarPanel: 'explorer' | 'search' | 'git' | 'extensions' | 'contact' | 'profile' | 'settings' | 'assistant';
   setActiveSidebarPanel: (panel: PortfolioStore['activeSidebarPanel']) => void;
   sidebarVisible: boolean;
   toggleSidebar: () => void;
   sidebarWidth: number;
   setSidebarWidth: (w: number) => void;
 
-  // Terminal visibility
   terminalVisible: boolean;
   toggleTerminal: () => void;
   terminalHeight: number;
   setTerminalHeight: (h: number) => void;
 
-  // Search
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   searchResults: FileNode[];
 
-  // Mobile
   isMobile: boolean;
   setIsMobile: (v: boolean) => void;
 
-  // Toast notifications
   toasts: Toast[];
   showToast: (message: string) => void;
   dismissToast: (id: number) => void;
 
-  // Command Palette
   commandPaletteOpen: boolean;
   toggleCommandPalette: () => void;
   setCommandPaletteOpen: (v: boolean) => void;
 
-  // Theme
   theme: 'dark' | 'light';
   setTheme: (theme: 'dark' | 'light') => void;
 
-  // Editor settings
   editorFontSize: number;
   setEditorFontSize: (size: number) => void;
   showLineNumbers: boolean;
   toggleLineNumbers: () => void;
+  wordWrap: boolean;
+  toggleWordWrap: () => void;
+  tabSize: number;
+  setTabSize: (size: number) => void;
+  cursorStyle: 'line' | 'block' | 'underline';
+  setCursorStyle: (style: 'line' | 'block' | 'underline') => void;
+  breadcrumbsVisible: boolean;
+  toggleBreadcrumbs: () => void;
+  resetSettings: () => void;
+
+  tourOpen: boolean;
+  startTour: () => void;
+  closeTour: () => void;
+
+  soundEnabled: boolean;
+  toggleSound: () => void;
+  soundVolume: number;
+  setSoundVolume: (volume: number) => void;
 }
 
 export interface Toast {
@@ -132,6 +141,16 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     }
     set({ openTabs: filtered, activeTabId: newActiveId });
   },
+  closeOtherTabs: (id: string) => {
+    const { openTabs } = get();
+    const target = openTabs.find((t) => t.id === id);
+    if (target) {
+      set({ openTabs: [target], activeTabId: id });
+    }
+  },
+  closeAllTabs: () => {
+    set({ openTabs: [], activeTabId: null });
+  },
   setActiveTab: (id: string) => set({ activeTabId: id }),
 
   mdPreviewMode: false,
@@ -161,29 +180,31 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         output = [
           { type: 'highlight', content: 'Available commands:' },
           { type: 'output', content: '' },
-          { type: 'info', content: '  help            Show this help message' },
-          { type: 'info', content: '  ls              List portfolio files' },
-          { type: 'info', content: '  cat <file>      Open a file in the editor' },
-          { type: 'info', content: '  clear           Clear the terminal' },
-          { type: 'info', content: '  whoami          Display developer info' },
-          { type: 'info', content: '  skills          List technical skills' },
-          { type: 'info', content: '  projects        List all projects' },
-          { type: 'info', content: '  contact         Show contact info' },
-          { type: 'info', content: '  experience      Show work experience' },
-          { type: 'info', content: '  neofetch        Display system info' },
-          { type: 'info', content: '  date            Show current date/time' },
-          { type: 'info', content: '  echo <text>     Print text to terminal' },
-          { type: 'info', content: '  pwd             Print working directory' },
-          { type: 'info', content: '  cd <dir>        Change directory' },
-          { type: 'info', content: '  sudo hire me    Try it...' },
-          { type: 'info', content: '  npm run dev     Start the portfolio' },
-          { type: 'info', content: '  git log         Show commit history' },
-          { type: 'info', content: '  git status      Show working tree status' },
-          { type: 'info', content: '  uname -a        System information' },
-          { type: 'info', content: '  rm -rf /        Nice try' },
-          { type: 'info', content: '  history         Show command history' },
-          { type: 'info', content: '  open <file>     Open file in editor (alias for cat)' },
-          { type: 'info', content: '  tree            Show file tree' },
+          { type: 'info', content: '  help           | Show this help message' },
+          { type: 'info', content: '  ls             | List portfolio files' },
+          { type: 'info', content: '  cat <file>     | Open a file in the editor' },
+          { type: 'info', content: '  clear          | Clear the terminal' },
+          { type: 'info', content: '  whoami         | Display developer info' },
+          { type: 'info', content: '  skills         | List technical skills' },
+          { type: 'info', content: '  projects       | List all projects' },
+          { type: 'info', content: '  contact        | Show contact info' },
+          { type: 'info', content: '  experience     | Show work experience' },
+          { type: 'info', content: '  neofetch       | Display system info' },
+          { type: 'info', content: '  date           | Show current date/time' },
+          { type: 'info', content: '  echo <text>    | Print text to terminal' },
+          { type: 'info', content: '  pwd            | Print working directory' },
+          { type: 'info', content: '  cd <dir>       | Change directory' },
+          { type: 'info', content: '  sudo hire me   | Try it...' },
+          { type: 'info', content: '  stats          | View live views & likes from Redis' },
+          { type: 'info', content: '  ai <question>  | Ask Mandeep\'s AI Assistant (Gemini)' },
+          { type: 'info', content: '  npm run dev    | Start the portfolio' },
+          { type: 'info', content: '  git log        | Show commit history' },
+          { type: 'info', content: '  git status     | Show working tree status' },
+          { type: 'info', content: '  uname -a       | System information' },
+          { type: 'info', content: '  rm -rf /       | Nice try' },
+          { type: 'info', content: '  history        | Show command history' },
+          { type: 'info', content: '  open <file>    | Open file in editor (alias for cat)' },
+          { type: 'info', content: '  tree           | Show file tree' },
           { type: 'output', content: '' },
           { type: 'dim', content: '  Tip: Press Tab for autocomplete' },
         ];
@@ -499,6 +520,76 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         output = [{ type: 'output', content: 'PortfolioOS 1.0.0 x86_64 Next.js/16 TypeScript/5' }];
         break;
 
+      case 'stats': {
+        output = [
+          { type: 'highlight', content: 'Portfolio Analytics (Upstash Redis):' },
+          { type: 'dim', content: 'Connecting to Redis...' },
+        ];
+        if (typeof window !== 'undefined') {
+          fetch('/api/stats')
+            .then((r) => r.json())
+            .then((d) => {
+              set((s) => ({
+                terminalHistory: [
+                  ...s.terminalHistory,
+                  { type: 'success', content: `  Total Views : ${d.views ?? 0}` },
+                  { type: 'success', content: `  Total Likes : ${d.likes ?? 0}` },
+                ],
+              }));
+            })
+            .catch(() => {
+              set((s) => ({
+                terminalHistory: [
+                  ...s.terminalHistory,
+                  { type: 'error', content: '  Failed to fetch Redis stats' },
+                ],
+              }));
+            });
+        }
+        break;
+      }
+
+      case 'ai':
+      case 'ask': {
+        const query = args.join(' ').trim();
+        if (!query) {
+          output = [
+            { type: 'error', content: 'Usage: ai <question>' },
+            { type: 'dim', content: 'Example: ai what are Mandeep\'s key projects?' },
+          ];
+        } else {
+          output = [
+            { type: 'highlight', content: `[Gemini Copilot]: Thinking...` },
+          ];
+          if (typeof window !== 'undefined') {
+            fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: query }),
+            })
+              .then((r) => r.json())
+              .then((d) => {
+                const lines = (d.reply || d.error || 'No response received.').split('\n');
+                set((s) => ({
+                  terminalHistory: [
+                    ...s.terminalHistory,
+                    ...lines.map((l: string) => ({ type: 'info' as const, content: `  ${l}` })),
+                  ],
+                }));
+              })
+              .catch((err) => {
+                set((s) => ({
+                  terminalHistory: [
+                    ...s.terminalHistory,
+                    { type: 'error', content: `  Failed to connect to AI assistant: ${err.message}` },
+                  ],
+                }));
+              });
+          }
+        }
+        break;
+      }
+
       case 'rm':
         output = [
           { type: 'error', content: 'Permission denied. Nice try though.' },
@@ -551,6 +642,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   showToast: (message: string) => {
     const id = Date.now();
     const toast: Toast = { id, message, timestamp: Date.now() };
+    playToastSound();
     set((s) => ({ toasts: [...s.toasts, toast] }));
     setTimeout(() => {
       set((s) => ({ toasts: s.toasts.filter(t => t.id !== id) }));
@@ -562,10 +654,11 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
 
   theme: 'dark',
   setTheme: (theme: 'dark' | 'light') => {
+    playToggleSound();
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('portfolio-theme', theme);
-      } catch {}
+      } catch { }
       const root = document.documentElement;
       if (theme === 'light') {
         root.classList.add('theme-light');
@@ -580,11 +673,132 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     set({ theme });
   },
 
-  editorFontSize: 13,
-  setEditorFontSize: (size: number) => set({ editorFontSize: Math.max(10, Math.min(24, size)) }),
+  editorFontSize: typeof window !== 'undefined' ? parseInt(localStorage.getItem('portfolio_font_size') || '13', 10) : 13,
+  setEditorFontSize: (size: number) => {
+    playToggleSound();
+    const clamped = Math.max(10, Math.min(24, size));
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('portfolio_font_size', String(clamped));
+      } catch {}
+    }
+    set({ editorFontSize: clamped });
+  },
 
-  showLineNumbers: true,
-  toggleLineNumbers: () => set((s) => ({ showLineNumbers: !s.showLineNumbers })),
+  showLineNumbers: typeof window !== 'undefined' ? localStorage.getItem('portfolio_line_numbers') !== 'false' : true,
+  toggleLineNumbers: () => {
+    playToggleSound();
+    set((s) => {
+      const next = !s.showLineNumbers;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('portfolio_line_numbers', String(next));
+        } catch {}
+      }
+      return { showLineNumbers: next };
+    });
+  },
+
+  wordWrap: typeof window !== 'undefined' ? localStorage.getItem('portfolio_word_wrap') === 'true' : false,
+  toggleWordWrap: () => {
+    playToggleSound();
+    set((s) => {
+      const next = !s.wordWrap;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('portfolio_word_wrap', String(next));
+        } catch {}
+      }
+      return { wordWrap: next };
+    });
+  },
+
+  tabSize: typeof window !== 'undefined' ? parseInt(localStorage.getItem('portfolio_tab_size') || '2', 10) : 2,
+  setTabSize: (size: number) => {
+    playToggleSound();
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('portfolio_tab_size', String(size));
+      } catch {}
+    }
+    set({ tabSize: size });
+  },
+
+  cursorStyle: typeof window !== 'undefined' ? (localStorage.getItem('portfolio_cursor_style') as 'line' | 'block' | 'underline') || 'line' : 'line',
+  setCursorStyle: (style: 'line' | 'block' | 'underline') => {
+    playToggleSound();
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('portfolio_cursor_style', style);
+      } catch {}
+    }
+    set({ cursorStyle: style });
+  },
+
+  breadcrumbsVisible: typeof window !== 'undefined' ? localStorage.getItem('portfolio_breadcrumbs') !== 'false' : true,
+  toggleBreadcrumbs: () => {
+    playToggleSound();
+    set((s) => {
+      const next = !s.breadcrumbsVisible;
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('portfolio_breadcrumbs', String(next));
+        } catch {}
+      }
+      return { breadcrumbsVisible: next };
+    });
+  },
+
+  resetSettings: () => {
+    playToggleSound();
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('portfolio_font_size');
+        localStorage.removeItem('portfolio_line_numbers');
+        localStorage.removeItem('portfolio_word_wrap');
+        localStorage.removeItem('portfolio_tab_size');
+        localStorage.removeItem('portfolio_cursor_style');
+        localStorage.removeItem('portfolio_breadcrumbs');
+        localStorage.removeItem('portfolio_sound_volume');
+        localStorage.removeItem('portfolio_sound_enabled');
+      } catch {}
+    }
+    set({
+      editorFontSize: 13,
+      showLineNumbers: true,
+      wordWrap: false,
+      tabSize: 2,
+      cursorStyle: 'line',
+      breadcrumbsVisible: true,
+      soundEnabled: true,
+      soundVolume: 80,
+    });
+  },
+
+  tourOpen: false,
+  startTour: () => set({ tourOpen: true }),
+  closeTour: () => set({ tourOpen: false }),
+
+  soundEnabled: typeof window !== 'undefined' ? localStorage.getItem('portfolio_sound_enabled') !== 'false' : true,
+  toggleSound: () => {
+    playToggleSound();
+    set((s) => {
+      const next = !s.soundEnabled;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('portfolio_sound_enabled', String(next));
+      }
+      return { soundEnabled: next };
+    });
+  },
+
+  soundVolume: typeof window !== 'undefined' ? parseInt(localStorage.getItem('portfolio_sound_volume') || '80', 10) : 80,
+  setSoundVolume: (volume: number) => {
+    const clamped = Math.max(0, Math.min(100, volume));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('portfolio_sound_volume', String(clamped));
+    }
+    set({ soundVolume: clamped });
+  },
 }));
 
 function getAllFilesFlat(nodes: FileNode[]): FileNode[] {
