@@ -138,57 +138,72 @@ export default function FeatureHighlighter() {
     left: '50%',
     transform: 'translate(-50%, -50%)',
     zIndex: 10001,
+    width: 'calc(100vw - 24px)',
+    maxWidth: '360px',
   };
 
-  if (targetRect) {
-    if (isMobile) {
+  if (isMobile) {
+    if (targetRect) {
       const targetCenterY = targetRect.top + targetRect.height / 2;
-      const isTargetInBottomHalf = targetCenterY > window.innerHeight / 2;
+      const isTargetInBottomHalf = targetCenterY > (typeof window !== 'undefined' ? window.innerHeight * 0.55 : 350);
 
       if (isTargetInBottomHalf) {
         cardStyle = {
           position: 'fixed',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          top: 'max(16px, env(safe-area-inset-top, 16px))',
+          left: '12px',
+          right: '12px',
+          margin: '0 auto',
           zIndex: 10001,
-          width: 'calc(100vw - 32px)',
-          maxWidth: '340px',
+          maxWidth: '360px',
+          width: 'calc(100vw - 24px)',
         };
       } else {
         cardStyle = {
           position: 'fixed',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          bottom: 'max(62px, env(safe-area-inset-bottom, 62px))',
+          left: '12px',
+          right: '12px',
+          margin: '0 auto',
           zIndex: 10001,
-          width: 'calc(100vw - 32px)',
-          maxWidth: '340px',
+          maxWidth: '360px',
+          width: 'calc(100vw - 24px)',
         };
       }
     } else {
-      const spaceBelow = window.innerHeight - targetRect.bottom;
-      const spaceRight = window.innerWidth - targetRect.right;
-
-      let top = targetRect.bottom + 12;
-      let left = targetRect.left;
-
-      if (spaceBelow < 200) {
-        top = Math.max(16, targetRect.top - 180);
-      }
-
-      if (spaceRight < 340) {
-        left = Math.max(16, window.innerWidth - 350);
-      }
-
       cardStyle = {
         position: 'fixed',
-        top: `${top}px`,
-        left: `${left}px`,
+        bottom: 'max(62px, env(safe-area-inset-bottom, 62px))',
+        left: '12px',
+        right: '12px',
+        margin: '0 auto',
         zIndex: 10001,
-        width: '340px',
+        maxWidth: '360px',
+        width: 'calc(100vw - 24px)',
       };
     }
+  } else if (targetRect) {
+    const spaceBelow = window.innerHeight - targetRect.bottom;
+    const spaceRight = window.innerWidth - targetRect.right;
+
+    let top = targetRect.bottom + 12;
+    let left = targetRect.left;
+
+    if (spaceBelow < 200) {
+      top = Math.max(16, targetRect.top - 180);
+    }
+
+    if (spaceRight < 340) {
+      left = Math.max(16, window.innerWidth - 350);
+    }
+
+    cardStyle = {
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${left}px`,
+      zIndex: 10001,
+      width: '340px',
+    };
   }
 
   return (

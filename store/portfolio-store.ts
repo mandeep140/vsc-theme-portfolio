@@ -632,7 +632,11 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   searchResults: [],
 
   isMobile: false,
-  setIsMobile: (v: boolean) => set({ isMobile: v, sidebarVisible: v ? false : true }),
+  setIsMobile: (v: boolean) =>
+    set((s) => ({
+      isMobile: v,
+      sidebarVisible: s.isMobile === v ? s.sidebarVisible : v ? false : true,
+    })),
 
   commandPaletteOpen: false,
   toggleCommandPalette: () => set((s) => ({ commandPaletteOpen: !s.commandPaletteOpen })),
