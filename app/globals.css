@@ -1,26 +1,237 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.625rem;
+}
+
+@layer base {
+  * {
+    border-color: transparent;
+    outline-color: transparent;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #1e1e1e;
+    color: #cccccc;
+    font-family: var(--font-mono), 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* VS Code scrollbar styles */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
 }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(121, 121, 121, 0.4);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 7px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(121, 121, 121, 0.7);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Selection color */
+::selection {
+  background: #264f78;
+  color: white;
+}
+
+/* Terminal cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+input[type="text"]:focus {
+  animation: none;
+}
+
+/* Prevent layout shifts */
+* {
+  box-sizing: border-box;
+}
+
+/* Command Palette animation */
+@keyframes paletteIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-paletteIn {
+  animation: paletteIn 0.15s ease-out;
+}
+
+/* Mobile sidebar slide in */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.2s ease-out;
+}
+
+/* Toast notification animation */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-toastIn {
+  animation: toastIn 0.2s ease-out;
+}
+
+/* ============================================
+   Light Theme Overrides
+   ============================================ */
+
+/* Apply a base CSS inversion + hue rotation for quick light theme.
+   Key structural colors are further refined with targeted overrides. */
+.theme-light {
+  filter: none;
+}
+
+.theme-light body {
+  background: #f5f5f5;
+  color: #383838;
+}
+
+/* Editor and main backgrounds */
+.theme-light .bg-\[\#1e1e1e\] { background-color: #ffffff !important; }
+.theme-light .bg-\[\#252526\] { background-color: #f3f3f3 !important; }
+.theme-light .bg-\[\#333333\] { background-color: #2c2c2c !important; }
+.theme-light .bg-\[\#2d2d2d\] { background-color: #ececec !important; }
+.theme-light .bg-\[\#2d2d30\] { background-color: #f0f0f0 !important; }
+.theme-light .bg-\[\#323233\] { background-color: #dddddd !important; }
+.theme-light .bg-\[\#3c3c3c\] { background-color: #e8e8e8 !important; }
+.theme-light .bg-\[\#37373d\] { background-color: #d6ebff !important; }
+.theme-light .bg-\[\#2a2d2e\] { background-color: #f0f0f0 !important; }
+.theme-light .bg-\[\#094771\] { background-color: #0060c0 !important; }
+
+/* Text colors */
+.theme-light .text-\[\#cccccc\] { color: #383838 !important; }
+.theme-light .text-\[\#bbbbbb\] { color: #555555 !important; }
+.theme-light .text-\[\#858585\] { color: #717171 !important; }
+.theme-light .text-\[\#969696\] { color: #717171 !important; }
+.theme-light .text-white         { color: #111111 !important; }
+
+/* Border colors */
+.theme-light .border-\[\#252526\] { border-color: #dcdcdc !important; }
+.theme-light .border-\[\#1e1e1e\] { border-color: #e8e8e8 !important; }
+.theme-light .border-\[\#3c3c3c\] { border-color: #d0d0d0 !important; }
+.theme-light .border-\[\#505050\] { border-color: #c0c0c0 !important; }
+.theme-light .border-\[\#454545\] { border-color: #c8c8c8 !important; }
+
+/* Activity bar keeps dark (VS Code does this too) */
+.theme-light .bg-\[\#333333\] { background-color: #2c2c2c !important; }
+/* Keep icon colors in activity bar readable */
+.theme-light .bg-\[\#333333\] .text-\[\#858585\] { color: #a0a0a0 !important; }
+
+/* Status bar stays blue */
+.theme-light .bg-\[\#007acc\] { background-color: #007acc !important; }
+.theme-light .bg-\[\#007acc\] .text-\[\#cccccc\] { color: #ffffff !important; }
+
+/* Hover states */
+.theme-light .hover\:bg-\[\#2a2d2e\]:hover { background-color: #e8e8e8 !important; }
+.theme-light .hover\:bg-\[\#37373d\]:hover  { background-color: #d6ebff !important; }
+.theme-light .hover\:bg-\[\#505050\]:hover  { background-color: #d0d0d0 !important; }
+.theme-light .hover\:bg-\[\#094771\]:hover  { background-color: #0060c0 !important; }
+
+/* Syntax highlighter in light mode: counter-invert the theme */
+.theme-light pre[class*="language-"] {
+  background: #ffffff !important;
+  color: #383838 !important;
+}
+
+/* ============================================
+   Performance & Animation Optimizations
+   ============================================ */
+
+/* GPU-accelerate sidebar and terminal transitions */
+#vscode-sidebar {
+  will-change: width;
+  transform: translateZ(0);
+}
+
+#vscode-terminal {
+  will-change: height;
+  transform: translateZ(0);
+}
+
+/* Reduce animations on low-performance devices */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Sharper transitions on mobile */
+@media (max-width: 767px) {
+  .animate-slideInLeft {
+    animation-duration: 0.15s;
+  }
+  .animate-paletteIn {
+    animation-duration: 0.1s;
+  }
+}
+
+/* Resize handle - ensure cursor applies globally during drag */
+body.resizing-h {
+  cursor: ns-resize !important;
+  user-select: none !important;
+}
+
+body.resizing-v {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
