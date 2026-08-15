@@ -28,9 +28,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${jetbrainsMono.variable} antialiased bg-[#1e1e1e] text-[#cccccc] overflow-hidden`}
+        className={`${jetbrainsMono.variable} antialiased overflow-hidden`}
       >
         {children}
       </body>

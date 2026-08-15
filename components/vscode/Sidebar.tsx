@@ -4,11 +4,12 @@ import { useRef, useCallback } from 'react';
 import {
   ChevronRight, ChevronDown, FileText, Folder, FolderOpen,
   Search, GitBranch, GitCommit, ExternalLink, File, Sun, Moon,
-  Mail, Globe, Phone, Minus, Plus, AlignJustify
+  Mail, Globe, Phone, Minus, Plus, AlignJustify, X
 } from 'lucide-react';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { FileNode } from '@/data/portfolio-data';
 import { Input } from '@/components/ui/input';
+import Image from 'next/image';
 
 function getFileIconComponent(name: string) {
   if (name.endsWith('.tsx')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 text-center flex-shrink-0">TSX</span> };
@@ -21,22 +22,24 @@ function getFileIconComponent(name: string) {
 }
 
 function FileTreeItem({ node, depth }: { node: FileNode; depth: number }) {
-  const { expandedFolders, toggleFolder, openFile, activeTabId } = usePortfolioStore();
+  const { expandedFolders, toggleFolder, openFile, activeTabId, theme } = usePortfolioStore();
   const isExpanded = expandedFolders.has(node.id);
   const isActive = activeTabId === node.id;
+  const isLight = theme === 'light';
 
   if (node.type === 'folder') {
     return (
       <div>
         <button
           onClick={() => toggleFolder(node.id)}
-          className={`w-full flex items-center gap-1 py-[3px] px-2 text-[13px] hover:bg-[#2a2d2e] transition-colors text-left text-[#cccccc]`}
+          className={`w-full flex items-center gap-1 py-[3px] px-2 text-[13px] transition-colors text-left ${isLight ? 'text-[#333333] hover:bg-[#e8e8e8]' : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+            }`}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
         >
           {isExpanded ? (
-            <ChevronDown className="w-4 h-4 text-[#cccccc] flex-shrink-0" />
+            <ChevronDown className={`w-4 h-4 flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#cccccc]'}`} />
           ) : (
-            <ChevronRight className="w-4 h-4 text-[#cccccc] flex-shrink-0" />
+            <ChevronRight className={`w-4 h-4 flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#cccccc]'}`} />
           )}
           {isExpanded ? (
             <FolderOpen className="w-4 h-4 text-[#dcb67a] flex-shrink-0" />
@@ -61,8 +64,12 @@ function FileTreeItem({ node, depth }: { node: FileNode; depth: number }) {
     <button
       onClick={() => openFile(node)}
       className={`w-full flex items-center gap-1.5 py-[3px] px-2 text-[13px] transition-colors text-left ${isActive
-        ? 'bg-[#37373d] text-white'
-        : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+        ? isLight
+          ? 'bg-[#d6ebff] text-[#004f9e] font-medium'
+          : 'bg-[#37373d] text-white font-medium'
+        : isLight
+          ? 'text-[#333333] hover:bg-[#e8e8e8]'
+          : 'text-[#cccccc] hover:bg-[#2a2d2e]'
         }`}
       style={{ paddingLeft: `${depth * 16 + 8}px` }}
       title={node.name}
@@ -74,13 +81,16 @@ function FileTreeItem({ node, depth }: { node: FileNode; depth: number }) {
 }
 
 function ExplorerPanel() {
-  const { fileTree } = usePortfolioStore();
+  const { fileTree, theme } = usePortfolioStore();
+  const isLight = theme === 'light';
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center justify-between px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center justify-between px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         <span>Explorer</span>
       </div>
-      <div className="flex items-center px-4 py-1 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center px-4 py-1 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#666666]' : 'text-[#bbbbbb]'
+        }`}>
         <span>Portfolio Files</span>
       </div>
       <div className="flex-1 overflow-y-auto overflow-x-hidden pb-4 min-h-0">
@@ -93,10 +103,12 @@ function ExplorerPanel() {
 }
 
 function SearchPanel() {
-  const { searchQuery, setSearchQuery, searchResults, openFile } = usePortfolioStore();
+  const { searchQuery, setSearchQuery, searchResults, openFile, theme } = usePortfolioStore();
+  const isLight = theme === 'light';
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         Search
       </div>
       <div className="px-2 pb-2 flex-shrink-0">
@@ -106,19 +118,25 @@ function SearchPanel() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search files..."
-            className="h-7 bg-[#3c3c3c] border-[#3c3c3c] text-[#cccccc] text-[13px] pl-7 focus-visible:ring-0 focus-visible:border-[#007fd4] placeholder:text-[#858585]"
+            className={`h-7 text-[13px] pl-7 focus-visible:ring-0 focus-visible:border-[#007fd4] ${isLight
+              ? 'bg-white border-[#cecece] text-[#24292f] placeholder:text-[#999999]'
+              : 'bg-[#3c3c3c] border-[#3c3c3c] text-[#cccccc] placeholder:text-[#858585]'
+              }`}
           />
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-2 text-[13px] min-h-0">
         {searchQuery && searchResults.length === 0 && (
-          <p className="text-[#858585] px-2 py-1">No results found</p>
+          <p className={`px-2 py-1 ${isLight ? 'text-[#888888]' : 'text-[#858585]'}`}>No results found</p>
         )}
         {searchResults.map((file) => (
           <button
             key={file.id}
             onClick={() => openFile(file)}
-            className="w-full text-left px-2 py-1 hover:bg-[#2a2d2e] rounded flex items-center gap-2 text-[#cccccc]"
+            className={`w-full text-left px-2 py-1 rounded flex items-center gap-2 transition-colors ${isLight
+              ? 'hover:bg-[#e8e8e8] text-[#24292f]'
+              : 'hover:bg-[#2a2d2e] text-[#cccccc]'
+              }`}
           >
             <FileText className="w-3.5 h-3.5 text-[#519aba] flex-shrink-0" />
             <span className="truncate">{file.name}</span>
@@ -130,39 +148,48 @@ function SearchPanel() {
 }
 
 function GitPanel() {
+  const { theme } = usePortfolioStore();
+  const isLight = theme === 'light';
   return (
     <div className="flex flex-col h-full min-h-0 overflow-y-auto">
-      <div className="flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         Source Control
       </div>
       <div className="px-4 py-2">
-        <div className="flex items-center gap-2 text-[13px] text-[#cccccc] mb-3">
+        <div className={`flex items-center gap-2 text-[13px] mb-3 ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>
           <GitBranch className="w-4 h-4" />
-          <span>main</span>
+          <span className="font-medium">main</span>
         </div>
-        <div className="text-[11px] font-semibold text-[#bbbbbb] uppercase mb-2 tracking-wider">Changes</div>
-        <div className="text-[13px] text-[#858585] italic">Working tree clean</div>
-        <div className="mt-4 text-[11px] font-semibold text-[#bbbbbb] uppercase mb-2 tracking-wider">Recent Commits</div>
+        <div className={`text-[11px] font-semibold uppercase mb-2 tracking-wider ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'}`}>
+          Changes
+        </div>
+        <div className={`text-[13px] italic ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>
+          Working tree clean
+        </div>
+        <div className={`mt-4 text-[11px] font-semibold uppercase mb-2 tracking-wider ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'}`}>
+          Recent Commits
+        </div>
         <div className="space-y-2">
           <div className="flex items-start gap-2 text-[13px]">
             <GitCommit className="w-3.5 h-3.5 text-[#858585] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-[#cccccc]">feat: add VS Code themed portfolio</p>
-              <p className="text-[#858585] text-[11px]">2 hours ago</p>
+              <p className={isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}>feat: add VS Code themed portfolio</p>
+              <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>2 hours ago</p>
             </div>
           </div>
           <div className="flex items-start gap-2 text-[13px]">
             <GitCommit className="w-3.5 h-3.5 text-[#858585] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-[#cccccc]">feat: add terminal with commands</p>
-              <p className="text-[#858585] text-[11px]">5 hours ago</p>
+              <p className={isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}>feat: add terminal with commands</p>
+              <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>5 hours ago</p>
             </div>
           </div>
           <div className="flex items-start gap-2 text-[13px]">
             <GitCommit className="w-3.5 h-3.5 text-[#858585] mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-[#cccccc]">initial commit: project setup</p>
-              <p className="text-[#858585] text-[11px]">1 day ago</p>
+              <p className={isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}>initial commit: project setup</p>
+              <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>1 day ago</p>
             </div>
           </div>
         </div>
@@ -172,6 +199,8 @@ function GitPanel() {
 }
 
 function ExtensionsPanel() {
+  const { theme } = usePortfolioStore();
+  const isLight = theme === 'light';
   const extensions = [
     { name: 'TypeScript', publisher: 'Microsoft', color: '#519aba' },
     { name: 'Tailwind CSS', publisher: 'Tailwind Labs', color: '#38bdf8' },
@@ -182,23 +211,29 @@ function ExtensionsPanel() {
   ];
   return (
     <div className="flex flex-col h-full min-h-0 overflow-y-auto">
-      <div className="flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         Extensions
       </div>
       <div className="px-2 py-1 flex-shrink-0">
         <Input
           placeholder="Search extensions..."
-          className="h-7 bg-[#3c3c3c] border-[#3c3c3c] text-[#cccccc] text-[13px] focus-visible:ring-0 focus-visible:border-[#007fd4] placeholder:text-[#858585]"
+          className={`h-7 text-[13px] focus-visible:ring-0 focus-visible:border-[#007fd4] ${isLight
+            ? 'bg-white border-[#cecece] text-[#24292f] placeholder:text-[#999999]'
+            : 'bg-[#3c3c3c] border-[#3c3c3c] text-[#cccccc] placeholder:text-[#858585]'
+            }`}
         />
       </div>
-      <div className="px-2 text-[11px] font-semibold text-[#bbbbbb] uppercase mt-2 mb-1 tracking-wider">
+      <div className={`px-2 text-[11px] font-semibold uppercase mt-2 mb-1 tracking-wider ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         Installed
       </div>
       <div className="space-y-0.5">
         {extensions.map((ext) => (
           <div
             key={ext.name}
-            className="flex items-center gap-2 px-2 py-1.5 hover:bg-[#2a2d2e] cursor-pointer"
+            className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer rounded transition-colors ${isLight ? 'hover:bg-[#e8e8e8]' : 'hover:bg-[#2a2d2e]'
+              }`}
           >
             <div
               className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
@@ -207,8 +242,8 @@ function ExtensionsPanel() {
               {ext.name[0]}
             </div>
             <div className="min-w-0">
-              <p className="text-[13px] text-[#cccccc] truncate">{ext.name}</p>
-              <p className="text-[11px] text-[#858585] truncate">{ext.publisher}</p>
+              <p className={`text-[13px] truncate ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>{ext.name}</p>
+              <p className={`text-[11px] truncate ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>{ext.publisher}</p>
             </div>
           </div>
         ))}
@@ -218,6 +253,8 @@ function ExtensionsPanel() {
 }
 
 function ContactPanel() {
+  const { theme } = usePortfolioStore();
+  const isLight = theme === 'light';
   const contactItems = [
     { label: 'Email', value: 'mandeep.pc2006@gmail.com', link: 'mailto:mandeep.pc2006@gmail.com', Icon: Mail },
     { label: 'LinkedIn', value: 'linkedin.com/in/mandeepnagar', link: 'https://linkedin.com/in/mandeepnagar', Icon: ExternalLink },
@@ -227,39 +264,41 @@ function ContactPanel() {
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-y-auto">
-      <div className="flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         Contact
       </div>
       <div className="px-4 py-2 space-y-3">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-[#007fd4] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-[#007fd4] flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-sm">
             MN
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] text-[#cccccc] font-medium">Mandeep Nagar</p>
-            <p className="text-[11px] text-[#858585]">Full Stack Developer</p>
+            <p className={`text-[13px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Mandeep Nagar</p>
+            <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Full Stack Developer</p>
           </div>
         </div>
         {contactItems.map((item) => (
           <div key={item.label}>
-            <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-0.5">{item.label}</p>
+            <p className={`text-[11px] uppercase tracking-wider mb-0.5 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>{item.label}</p>
             <a
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[13px] text-[#3794ff] hover:underline flex items-center gap-1 group"
+              className={`text-[13px] hover:underline flex items-center gap-1 group font-medium ${isLight ? 'text-[#0060c0]' : 'text-[#3794ff]'
+                }`}
             >
               {item.value}
               <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
             </a>
           </div>
         ))}
-        <div className="pt-2 border-t border-[#3c3c3c]">
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-1">Location</p>
-          <p className="text-[13px] text-[#cccccc]">Patna, Bihar, India</p>
+        <div className={`pt-2 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
+          <p className={`text-[11px] uppercase tracking-wider mb-1 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Location</p>
+          <p className={`text-[13px] ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Patna, Bihar, India</p>
           <div className="flex items-center gap-1.5 mt-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#28c840] inline-block animate-pulse" />
-            <p className="text-[13px] text-[#28c840]">Open to opportunities</p>
+            <p className="text-[13px] text-[#28c840] font-medium">Open to opportunities</p>
           </div>
         </div>
       </div>
@@ -268,49 +307,54 @@ function ContactPanel() {
 }
 
 function ProfilePanel() {
+  const { theme } = usePortfolioStore();
+  const isLight = theme === 'light';
+
   return (
     <div className="flex flex-col h-full min-h-0 overflow-y-auto">
-      <div className="flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         Profile
       </div>
       <div className="px-4 py-4">
         {/* Avatar */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-[#007fd4] flex items-center justify-center text-white font-bold text-xl mb-3 ring-2 ring-[#007fd4] ring-offset-2 ring-offset-[#252526]">
-            MN
+        <div className="flex flex-col items-center mb-5">
+          <div className={`w-16 h-16 rounded-full overflow-hidden bg-[#007fd4] flex items-center justify-center text-white font-bold text-xl mb-3 shadow-md ring-2 ring-[#007fd4] ring-offset-2 ${isLight ? 'ring-offset-[#f3f3f3]' : 'ring-offset-[#252526]'
+            }`}>
+            <Image src="/images/my.png" alt="Profile Picture" height={64} width={64} className="h-full w-full object-cover rounded-full" />
           </div>
-          <p className="text-[14px] text-white font-semibold">Mandeep Nagar</p>
-          <p className="text-[12px] text-[#858585] mt-0.5">Full Stack Developer</p>
+          <p className={`text-[15px] font-semibold ${isLight ? 'text-[#111111]' : 'text-white'}`}>Mandeep Nagar</p>
+          <p className={`text-[12px] mt-0.5 ${isLight ? 'text-[#666666]' : 'text-[#858585]'}`}>Full Stack Developer</p>
           <div className="flex items-center gap-1.5 mt-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#28c840] inline-block" />
-            <span className="text-[11px] text-[#28c840]">Open to work</span>
+            <span className="text-[11px] text-[#28c840] font-medium">Open to work</span>
           </div>
         </div>
 
         {/* Bio */}
         <div className="mb-4">
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-1.5">About</p>
-          <p className="text-[12px] text-[#cccccc] leading-relaxed">
+          <p className={`text-[11px] uppercase tracking-wider mb-1.5 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
+          <p className={`text-[12px] leading-relaxed ${isLight ? 'text-[#333333]' : 'text-[#cccccc]'}`}>
             Full Stack Developer building production-ready SaaS applications with Next.js, Express.js, MongoDB, and modern web technologies.
           </p>
         </div>
 
         {/* Details */}
         <div className="space-y-2.5 mb-4">
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-1.5">Details</p>
+          <p className={`text-[11px] uppercase tracking-wider mb-1.5 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Details</p>
           <div className="flex items-center gap-2 text-[12px]">
-            <span className="text-[#858585] w-16 flex-shrink-0">Location</span>
-            <span className="text-[#cccccc]">Patna, Bihar, India</span>
+            <span className={`w-16 flex-shrink-0 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Location</span>
+            <span className={isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}>Patna, Bihar, India</span>
           </div>
           <div className="flex items-center gap-2 text-[12px]">
-            <span className="text-[#858585] w-16 flex-shrink-0">Email</span>
-            <a href="mailto:mandeep.pc2006@gmail.com" className="text-[#3794ff] hover:underline truncate">
+            <span className={`w-16 flex-shrink-0 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Email</span>
+            <a href="mailto:mandeep.pc2006@gmail.com" className={`hover:underline truncate ${isLight ? 'text-[#0060c0]' : 'text-[#3794ff]'}`}>
               mandeep.pc2006@gmail.com
             </a>
           </div>
           <div className="flex items-center gap-2 text-[12px]">
-            <span className="text-[#858585] w-16 flex-shrink-0">Website</span>
-            <a href="https://mandeepiitp.tech" target="_blank" rel="noopener noreferrer" className="text-[#3794ff] hover:underline">
+            <span className={`w-16 flex-shrink-0 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Website</span>
+            <a href="https://mandeepiitp.tech" target="_blank" rel="noopener noreferrer" className={`hover:underline ${isLight ? 'text-[#0060c0]' : 'text-[#3794ff]'}`}>
               mandeepiitp.tech
             </a>
           </div>
@@ -318,10 +362,16 @@ function ProfilePanel() {
 
         {/* Tech stack */}
         <div className="mb-4">
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-1.5">Primary Stack</p>
+          <p className={`text-[11px] uppercase tracking-wider mb-1.5 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Primary Stack</p>
           <div className="flex flex-wrap gap-1.5">
             {['Next.js', 'React', 'TypeScript', 'Node.js', 'MongoDB', 'TailwindCSS', 'Zustand', 'Docker'].map(tech => (
-              <span key={tech} className="px-2 py-0.5 bg-[#2d2d2d] text-[#cccccc] text-[11px] rounded border border-[#3c3c3c]">
+              <span
+                key={tech}
+                className={`px-2 py-0.5 text-[11px] rounded border ${isLight
+                  ? 'bg-white text-[#333333] border-[#d0d0d0]'
+                  : 'bg-[#2d2d2d] text-[#cccccc] border-[#3c3c3c]'
+                  }`}
+              >
                 {tech}
               </span>
             ))}
@@ -329,23 +379,29 @@ function ProfilePanel() {
         </div>
 
         {/* Links */}
-        <div className="pt-3 border-t border-[#3c3c3c]">
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-2">Links</p>
+        <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
+          <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Links</p>
           <div className="space-y-1.5">
             <a
               href="https://linkedin.com/in/mandeepnagar"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-[13px] text-[#3794ff] hover:text-white hover:bg-[#2a2d2e] px-2 py-1 rounded transition-colors"
+              className={`flex items-center gap-2 text-[13px] px-2 py-1 rounded transition-colors ${isLight
+                ? 'text-[#0060c0] hover:bg-[#e8e8e8]'
+                : 'text-[#3794ff] hover:text-white hover:bg-[#2a2d2e]'
+                }`}
             >
               <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-              LinkedIn
+              LinkedIn Profile
             </a>
             <a
               href="https://mandeepiitp.tech"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-[13px] text-[#3794ff] hover:text-white hover:bg-[#2a2d2e] px-2 py-1 rounded transition-colors"
+              className={`flex items-center gap-2 text-[13px] px-2 py-1 rounded transition-colors ${isLight
+                ? 'text-[#0060c0] hover:bg-[#e8e8e8]'
+                : 'text-[#3794ff] hover:text-white hover:bg-[#2a2d2e]'
+                }`}
             >
               <Globe className="w-3.5 h-3.5 flex-shrink-0" />
               Portfolio Website
@@ -359,37 +415,45 @@ function ProfilePanel() {
 
 function SettingsPanel() {
   const { theme, setTheme, editorFontSize, setEditorFontSize, showLineNumbers, toggleLineNumbers, showToast } = usePortfolioStore();
+  const isLight = theme === 'light';
 
   return (
     <div className="flex flex-col h-full min-h-0 overflow-y-auto">
-      <div className="flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider text-[#bbbbbb] uppercase flex-shrink-0">
+      <div className={`flex items-center px-4 py-1.5 text-[11px] font-semibold tracking-wider uppercase flex-shrink-0 ${isLight ? 'text-[#555555]' : 'text-[#bbbbbb]'
+        }`}>
         Settings
       </div>
 
       <div className="px-4 py-2 space-y-6">
         {/* Appearance */}
         <div>
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-3">Appearance</p>
+          <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Appearance</p>
           <div className="space-y-3">
             {/* Color Theme */}
             <div>
-              <p className="text-[12px] text-[#cccccc] mb-2">Color Theme</p>
+              <p className={`text-[12px] mb-2 font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Color Theme</p>
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={() => setTheme('dark')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded text-[12px] border transition-colors ${theme === 'dark'
-                    ? 'bg-[#094771] border-[#007fd4] text-white'
-                    : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded text-[12px] border transition-all cursor-pointer ${theme === 'dark'
+                    ? 'bg-[#094771] border-[#007fd4] text-white shadow-sm font-semibold'
+                    : isLight
+                      ? 'bg-white border-[#d0d0d0] text-[#555555] hover:border-[#007acc] hover:text-[#24292f]'
+                      : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
                     }`}
                 >
                   <Moon className="w-3.5 h-3.5" />
                   Dark+
                 </button>
                 <button
+                  type="button"
                   onClick={() => setTheme('light')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded text-[12px] border transition-colors ${theme === 'light'
-                    ? 'bg-[#094771] border-[#007fd4] text-white'
-                    : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded text-[12px] border transition-all cursor-pointer ${theme === 'light'
+                    ? 'bg-[#007acc] border-[#007acc] text-white shadow-sm font-semibold'
+                    : isLight
+                      ? 'bg-white border-[#d0d0d0] text-[#555555] hover:border-[#007acc] hover:text-[#24292f]'
+                      : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
                     }`}
                 >
                   <Sun className="w-3.5 h-3.5" />
@@ -402,48 +466,65 @@ function SettingsPanel() {
 
         {/* Editor */}
         <div>
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-3">Editor</p>
+          <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Editor</p>
           <div className="space-y-4">
             {/* Font Size */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[12px] text-[#cccccc]">Font Size</p>
-                <span className="text-[12px] text-[#858585]">{editorFontSize}px</span>
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Font Size</p>
+                <span className={`text-[12px] font-mono ${isLight ? 'text-[#666666]' : 'text-[#858585]'}`}>{editorFontSize}px</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => setEditorFontSize(editorFontSize - 1)}
-                  className="w-6 h-6 flex items-center justify-center bg-[#2d2d2d] rounded hover:bg-[#3c3c3c] text-[#cccccc] transition-colors"
+                  className={`w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer ${isLight
+                    ? 'bg-white border border-[#cecece] text-[#333333] hover:bg-[#e8e8e8]'
+                    : 'bg-[#2d2d2d] text-[#cccccc] hover:bg-[#3c3c3c]'
+                    }`}
+                  aria-label="Decrease font size"
                 >
                   <Minus className="w-3 h-3" />
                 </button>
-                <div className="flex-1 h-1 bg-[#3c3c3c] rounded-full relative">
+                <div className={`flex-1 h-1.5 rounded-full relative overflow-hidden ${isLight ? 'bg-[#d8d8d8]' : 'bg-[#3c3c3c]'}`}>
                   <div
-                    className="h-full bg-[#007fd4] rounded-full transition-all"
-                    style={{ width: `${((editorFontSize - 10) / 14) * 100}%` }}
+                    className="h-full bg-[#007fd4] rounded-full transition-all duration-150"
+                    style={{ width: `${Math.max(0, Math.min(100, ((editorFontSize - 10) / 14) * 100))}%` }}
                   />
                 </div>
                 <button
+                  type="button"
                   onClick={() => setEditorFontSize(editorFontSize + 1)}
-                  className="w-6 h-6 flex items-center justify-center bg-[#2d2d2d] rounded hover:bg-[#3c3c3c] text-[#cccccc] transition-colors"
+                  className={`w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer ${isLight
+                    ? 'bg-white border border-[#cecece] text-[#333333] hover:bg-[#e8e8e8]'
+                    : 'bg-[#2d2d2d] text-[#cccccc] hover:bg-[#3c3c3c]'
+                    }`}
+                  aria-label="Increase font size"
                 >
                   <Plus className="w-3 h-3" />
                 </button>
               </div>
             </div>
 
-            {/* Line Numbers */}
-            <div className="flex items-center justify-between">
+            {/* Line Numbers Switch */}
+            <div className={`p-2.5 rounded border flex items-center justify-between ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'
+              }`}>
               <div>
-                <p className="text-[12px] text-[#cccccc]">Line Numbers</p>
-                <p className="text-[11px] text-[#858585]">Show line numbers in editor</p>
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Line Numbers</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>
+                  {showLineNumbers ? 'Numbers visible in editor' : 'Numbers hidden in editor'}
+                </p>
               </div>
               <button
+                type="button"
                 onClick={toggleLineNumbers}
-                className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${showLineNumbers ? 'bg-[#007fd4]' : 'bg-[#3c3c3c]'}`}
+                className={`w-11 h-6 rounded-full transition-colors duration-200 relative flex items-center px-0.5 cursor-pointer flex-shrink-0 ${showLineNumbers ? 'bg-[#007acc]' : isLight ? 'bg-[#cccccc]' : 'bg-[#4a4a4a]'
+                  }`}
+                aria-label="Toggle line numbers"
               >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${showLineNumbers ? 'translate-x-4' : 'translate-x-0.5'}`}
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${showLineNumbers ? 'translate-x-5' : 'translate-x-0'
+                    }`}
                 />
               </button>
             </div>
@@ -452,12 +533,13 @@ function SettingsPanel() {
 
         {/* Terminal */}
         <div>
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-3">Terminal</p>
+          <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Terminal</p>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className={`p-2.5 rounded border flex items-center justify-between ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'
+              }`}>
               <div>
-                <p className="text-[12px] text-[#cccccc]">Shell</p>
-                <p className="text-[11px] text-[#858585]">Portfolio Terminal v1.0.0</p>
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Shell</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v1.0.0</p>
               </div>
               <AlignJustify className="w-4 h-4 text-[#858585]" />
             </div>
@@ -465,16 +547,18 @@ function SettingsPanel() {
         </div>
 
         {/* About */}
-        <div className="pt-3 border-t border-[#3c3c3c]">
-          <p className="text-[11px] text-[#858585] uppercase tracking-wider mb-2">About</p>
-          <p className="text-[12px] text-[#cccccc]">VS Code Portfolio</p>
-          <p className="text-[11px] text-[#858585]">Version 1.0.0</p>
-          <p className="text-[11px] text-[#858585]">Next.js 16 / React 19</p>
+        <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
+          <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
+          <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>VS Code Portfolio</p>
+          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 1.0.0</p>
+          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Next.js 16 / React 19</p>
           <button
+            type="button"
             onClick={() => showToast('Built by Mandeep Nagar with Next.js, TypeScript, and Tailwind CSS')}
-            className="mt-2 text-[11px] text-[#3794ff] hover:underline"
+            className={`mt-2 text-[11px] hover:underline cursor-pointer block ${isLight ? 'text-[#0060c0]' : 'text-[#3794ff]'
+              }`}
           >
-            View source
+            View source info
           </button>
         </div>
       </div>
@@ -483,9 +567,9 @@ function SettingsPanel() {
 }
 
 export default function Sidebar() {
-  const { activeSidebarPanel, sidebarVisible, sidebarWidth, setSidebarWidth, isMobile } = usePortfolioStore();
+  const { activeSidebarPanel, sidebarVisible, sidebarWidth, setSidebarWidth, isMobile, theme, toggleSidebar } = usePortfolioStore();
   const isResizing = useRef(false);
-
+  const isLight = theme === 'light';
   const ACTIVITY_BAR_WIDTH = 48;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -494,7 +578,6 @@ export default function Sidebar() {
 
     const handleMouseMove = (ev: MouseEvent) => {
       if (!isResizing.current) return;
-      // Subtract ActivityBar width so width tracks the mouse correctly
       setSidebarWidth(ev.clientX - ACTIVITY_BAR_WIDTH);
     };
 
@@ -514,9 +597,29 @@ export default function Sidebar() {
 
   const sidebarContent = (
     <div
-      className="bg-[#252526] border-r border-[#1e1e1e] flex-shrink-0 flex flex-col h-full overflow-hidden"
+      className={`flex-shrink-0 flex flex-col h-full overflow-hidden border-r transition-colors duration-150 ${isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'
+        }`}
       style={{ width: isMobile ? '100%' : sidebarWidth }}
     >
+      {/* Mobile close bar */}
+      {isMobile && (
+        <div className={`flex items-center justify-between px-3 py-2 border-b flex-shrink-0 ${isLight ? 'bg-[#e8e8e8] border-[#d8d8d8]' : 'bg-[#1f1f1f] border-[#2d2d2d]'
+          }`}>
+          <span className={`text-[12px] font-semibold uppercase tracking-wider ${isLight ? 'text-[#333333]' : 'text-[#cccccc]'}`}>
+            {activeSidebarPanel}
+          </span>
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className={`p-1 rounded transition-colors ${isLight ? 'hover:bg-[#d0d0d0] text-[#333333]' : 'hover:bg-[#3c3c3c] text-[#cccccc]'
+              }`}
+            aria-label="Close sidebar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {activeSidebarPanel === 'explorer' && <ExplorerPanel />}
       {activeSidebarPanel === 'search' && <SearchPanel />}
       {activeSidebarPanel === 'git' && <GitPanel />}
@@ -527,16 +630,19 @@ export default function Sidebar() {
     </div>
   );
 
-  // Mobile: overlay with backdrop
+  // Mobile drawer overlay
   if (isMobile) {
     if (!sidebarVisible) return null;
     return (
       <>
         <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => usePortfolioStore.getState().toggleSidebar()}
+          className="fixed inset-0 bg-black/60 z-40 animate-fadeIn backdrop-blur-[1px]"
+          onClick={toggleSidebar}
         />
-        <div className="fixed left-0 top-[30px] bottom-0 z-50 animate-slideInLeft">
+        <div
+          className="fixed left-0 top-0 bottom-[48px] w-[82vw] max-w-[320px] z-50 animate-slideInLeft shadow-2xl overflow-hidden"
+          style={{ willChange: 'transform' }}
+        >
           {sidebarContent}
         </div>
       </>
@@ -546,7 +652,7 @@ export default function Sidebar() {
   return (
     <>
       <div
-        className={`transition-all duration-200 ease-in-out overflow-hidden flex-shrink-0 ${sidebarVisible ? 'opacity-100' : 'max-w-0 opacity-0'
+        className={`transition-all duration-200 ease-in-out overflow-hidden flex-shrink-0 ${sidebarVisible ? 'opacity-100' : 'max-w-0 opacity-0 pointer-events-none'
           }`}
         style={{ width: sidebarVisible ? sidebarWidth : 0 }}
       >

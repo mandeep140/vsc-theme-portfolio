@@ -561,7 +561,24 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   },
 
   theme: 'dark',
-  setTheme: (theme: 'dark' | 'light') => set({ theme }),
+  setTheme: (theme: 'dark' | 'light') => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('portfolio-theme', theme);
+      } catch {}
+      const root = document.documentElement;
+      if (theme === 'light') {
+        root.classList.add('theme-light');
+        root.classList.remove('dark');
+        root.setAttribute('data-theme', 'light');
+      } else {
+        root.classList.remove('theme-light');
+        root.classList.add('dark');
+        root.setAttribute('data-theme', 'dark');
+      }
+    }
+    set({ theme });
+  },
 
   editorFontSize: 13,
   setEditorFontSize: (size: number) => set({ editorFontSize: Math.max(10, Math.min(24, size)) }),
