@@ -51,11 +51,10 @@ function MenuDropdown({
   return (
     <div
       ref={ref}
-      className={`fixed border rounded shadow-2xl py-1 min-w-[240px] max-h-[85vh] overflow-y-auto z-[200] animate-fadeIn ${
-        isLight
-          ? 'bg-[#f8f8f8] border-[#cccccc] text-[#24292f]'
-          : 'bg-[#2d2d30] border-[#454545] text-[#cccccc]'
-      }`}
+      className={`fixed border rounded shadow-2xl py-1 min-w-[240px] max-h-[85vh] overflow-y-auto z-[200] animate-fadeIn ${isLight
+        ? 'bg-[#f8f8f8] border-[#cccccc] text-[#24292f]'
+        : 'bg-[#2d2d30] border-[#454545] text-[#cccccc]'
+        }`}
     >
       {items.map((item, i) =>
         'divider' in item && item.divider ? (
@@ -75,17 +74,15 @@ function MenuDropdown({
               }
               onClose();
             }}
-            className={`w-full flex items-center justify-between px-3 py-[6px] text-[13px] text-left transition-colors cursor-pointer ${
-              isLight
-                ? 'hover:bg-[#0060c0] hover:text-white'
-                : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-[6px] text-[13px] text-left transition-colors cursor-pointer ${isLight
+              ? 'hover:bg-[#0060c0] hover:text-white'
+              : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="truncate">{'label' in item ? item.label : ''}</span>
             {'shortcut' in item && item.shortcut && (
-              <span className={`text-[11px] ml-4 flex-shrink-0 font-mono ${
-                isLight ? 'text-[#777777] group-hover:text-white' : 'text-[#858585]'
-              }`}>
+              <span className={`text-[11px] ml-4 flex-shrink-0 font-mono ${isLight ? 'text-[#777777] group-hover:text-white' : 'text-[#858585]'
+                }`}>
                 {item.shortcut}
               </span>
             )}
@@ -445,7 +442,7 @@ export default function TitleBar() {
       },
       {
         label: 'About VS Code Portfolio',
-        action: () => showToast('VS Code Portfolio v1.0.0 — Built by Mandeep Nagar'),
+        action: () => showToast('VS Code Portfolio v1.1.0 — Built by Mandeep Nagar'),
       },
     ],
   };
@@ -518,7 +515,7 @@ export default function TitleBar() {
     },
     {
       label: 'About Portfolio',
-      action: () => showToast('VS Code Portfolio v1.0.0 — Built by Mandeep Nagar'),
+      action: () => showToast('VS Code Portfolio v1.1.0 — Built by Mandeep Nagar'),
     },
   ];
 
@@ -528,11 +525,10 @@ export default function TitleBar() {
 
   return (
     <div
-      className={`flex items-center h-[30px] border-b select-none flex-shrink-0 md:h-[35px] relative transition-colors duration-150 ${
-        isLight
-          ? 'bg-[#dddddd] border-[#cccccc] text-[#24292f]'
-          : 'bg-[#323233] border-[#252526] text-[#cccccc]'
-      }`}
+      className={`flex items-center h-[30px] border-b select-none flex-shrink-0 md:h-[35px] relative transition-colors duration-150 ${isLight
+        ? 'bg-[#dddddd] border-[#cccccc] text-[#24292f]'
+        : 'bg-[#323233] border-[#252526] text-[#cccccc]'
+        }`}
     >
       <div className="flex items-center gap-0.5 px-1 text-[12px] md:text-[13px] flex-shrink-0">
         {visibleMenuKeys.map((name) => (
@@ -549,15 +545,14 @@ export default function TitleBar() {
                 e.stopPropagation();
                 handleMenuOpen(name);
               }}
-              className={`px-2 py-0.5 md:py-1 rounded-sm whitespace-nowrap transition-colors cursor-pointer ${
-                openMenu === name
-                  ? isLight
-                    ? 'bg-[#c8c8c8] text-black font-medium'
-                    : 'bg-[#505050] text-white font-medium'
-                  : isLight
-                    ? 'text-[#24292f] hover:bg-[#cecece]'
-                    : 'text-[#cccccc] hover:bg-[#505050]'
-              }`}
+              className={`px-2 py-0.5 md:py-1 rounded-sm whitespace-nowrap transition-colors cursor-pointer ${openMenu === name
+                ? isLight
+                  ? 'bg-[#c8c8c8] text-black font-medium'
+                  : 'bg-[#505050] text-white font-medium'
+                : isLight
+                  ? 'text-[#24292f] hover:bg-[#cecece]'
+                  : 'text-[#cccccc] hover:bg-[#505050]'
+                }`}
             >
               {name}
             </button>
@@ -577,15 +572,14 @@ export default function TitleBar() {
                 e.stopPropagation();
                 handleMenuOpen('More');
               }}
-              className={`px-2 py-0.5 rounded-sm whitespace-nowrap transition-colors cursor-pointer font-medium ${
-                openMenu === 'More'
-                  ? isLight
-                    ? 'bg-[#c8c8c8] text-black'
-                    : 'bg-[#505050] text-white'
-                  : isLight
-                    ? 'text-[#0060c0] hover:bg-[#cecece]'
-                    : 'text-[#3794ff] hover:bg-[#505050]'
-              }`}
+              className={`px-2 py-0.5 rounded-sm whitespace-nowrap transition-colors cursor-pointer font-medium ${openMenu === 'More'
+                ? isLight
+                  ? 'bg-[#c8c8c8] text-black'
+                  : 'bg-[#505050] text-white'
+                : isLight
+                  ? 'text-[#0060c0] hover:bg-[#cecece]'
+                  : 'text-[#3794ff] hover:bg-[#505050]'
+                }`}
             >
               More
             </button>

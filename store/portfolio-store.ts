@@ -159,7 +159,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   toggleMdPreview: () => set((s) => ({ mdPreviewMode: !s.mdPreviewMode })),
 
   terminalHistory: [
-    { type: 'dim', content: 'Portfolio Terminal v1.0.0' },
+    { type: 'dim', content: 'Portfolio Terminal v1.1.0' },
     { type: 'dim', content: 'Type "help" to see available commands.' },
     { type: 'output', content: '' },
   ],
@@ -393,7 +393,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         output = [
           { type: 'info', content: '        /\\                   mandeep@portfolio' },
           { type: 'info', content: '       /  \\                  -----------------' },
-          { type: 'success', content: '      /    \\                 OS: PortfolioOS v1.0' },
+          { type: 'success', content: '      /    \\                 OS: PortfolioOS v1.1.0' },
           { type: 'success', content: '     /  /\\  \\                Host: VS Code Theme' },
           { type: 'highlight', content: '    /  /  \\  \\               Kernel: Next.js 16' },
           { type: 'highlight', content: '   /  /    \\  \\              Uptime: 20+ years' },
@@ -512,7 +512,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         const sub = args[0];
         if (sub === 'run' && args[1] === 'dev') {
           output = [
-            { type: 'command', content: '> portfolio@1.0.0 dev' },
+            { type: 'command', content: '> portfolio@1.1.0 dev' },
             { type: 'command', content: '> next dev' },
             { type: 'output', content: '' },
             { type: 'success', content: '  > Next.js 16.3.1' },
@@ -562,7 +562,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       }
 
       case 'uname':
-        output = [{ type: 'output', content: 'PortfolioOS 1.0.0 x86_64 Next.js/16 TypeScript/5' }];
+        output = [{ type: 'output', content: 'PortfolioOS 1.1.0 x86_64 Next.js/16 TypeScript/5' }];
         break;
 
       case 'stats': {
