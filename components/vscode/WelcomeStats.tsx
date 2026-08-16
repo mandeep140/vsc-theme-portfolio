@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Eye, Heart, Sparkles } from 'lucide-react';
+import { Eye, Heart, Sparkles, MessageSquareQuote } from 'lucide-react';
 import { usePortfolioStore } from '@/store/portfolio-store';
-import { playPopSound } from '@/lib/sound';
+import { playPopSound, playClickSound } from '@/lib/sound';
 
 export default function WelcomeStats({ isLight }: { isLight: boolean }) {
   const [views, setViews] = useState<number | null>(null);
@@ -11,7 +11,7 @@ export default function WelcomeStats({ isLight }: { isLight: boolean }) {
   const [hasLiked, setHasLiked] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [heartAnim, setHeartAnim] = useState(false);
-  const showToast = usePortfolioStore((s) => s.showToast);
+  const { showToast, setActiveSidebarPanel, sidebarVisible, toggleSidebar } = usePortfolioStore();
 
   useEffect(() => {
     let isMounted = true;
@@ -94,8 +94,14 @@ export default function WelcomeStats({ isLight }: { isLight: boolean }) {
     }
   }, [isLiking, showToast]);
 
+  const handleOpenReviews = () => {
+    playClickSound();
+    setActiveSidebarPanel('feedback');
+    if (!sidebarVisible) toggleSidebar();
+  };
+
   return (
-    <div data-tour="welcome-stats" className="flex items-center justify-center gap-3 my-4 flex-wrap select-none">
+    <div data-tour="welcome-stats" className="flex items-center justify-center gap-2.5 my-3 flex-wrap select-none">
       <div
         className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-mono transition-all ${isLight
             ? 'bg-[#f4f4f4] border-[#d8d8d8] text-[#333333]'
@@ -138,6 +144,19 @@ export default function WelcomeStats({ isLight }: { isLight: boolean }) {
         {heartAnim && (
           <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-amber-400 animate-spin" />
         )}
+      </button>
+
+      <button
+        type="button"
+        onClick={handleOpenReviews}
+        className={`group relative flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-mono transition-all duration-200 cursor-pointer active:scale-95 ${isLight
+            ? 'bg-[#f4f4f4] border-[#d8d8d8] text-[#333333] hover:border-amber-400 hover:text-amber-600'
+            : 'bg-[#252526] border-[#3c3c3c] text-[#cccccc] hover:border-amber-500/60 hover:text-amber-400'
+          }`}
+        title="Open Reviews & Feedback panel"
+      >
+        <MessageSquareQuote className="w-3.5 h-3.5 text-amber-500 transition-transform group-hover:scale-110" />
+        <span className="text-[11px] opacity-70 uppercase tracking-wider">Reviews</span>
       </button>
     </div>
   );

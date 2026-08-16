@@ -11,7 +11,19 @@ interface TourStep {
 }
 
 export default function FeatureHighlighter() {
-  const { theme, isMobile, tourOpen, startTour, closeTour } = usePortfolioStore();
+  const {
+    theme,
+    isMobile,
+    tourOpen,
+    startTour,
+    closeTour,
+    setMobileMoreOpen,
+    terminalVisible,
+    toggleTerminal,
+    sidebarVisible,
+    toggleSidebar,
+    setActiveSidebarPanel,
+  } = usePortfolioStore();
   const isLight = theme === 'light';
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -67,25 +79,30 @@ export default function FeatureHighlighter() {
 
   const finishTour = useCallback(() => {
     closeTour();
+    setMobileMoreOpen(false);
     setCurrentStep(0);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('portfolio_tour_seen', 'true');
     }
-  }, [closeTour]);
+  }, [closeTour, setMobileMoreOpen]);
 
   const updateTargetRect = useCallback(() => {
     if (!tourOpen) return;
     const step = steps[currentStep];
     if (!step) return;
 
-    const el = document.querySelector(`[data-tour="${step.targetKey}"]`);
+    let el = document.querySelector(`[data-tour="${step.targetKey}"]`);
+    if (!el && isMobile) {
+      el = document.querySelector('[data-tour="more-btn"]');
+    }
+
     if (el) {
       const rect = el.getBoundingClientRect();
       setTargetRect(rect);
     } else {
       setTargetRect(null);
     }
-  }, [tourOpen, currentStep, steps]);
+  }, [tourOpen, currentStep, steps, isMobile]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && sessionStorage.getItem('portfolio_tour_seen')) {
@@ -101,18 +118,47 @@ export default function FeatureHighlighter() {
 
   useEffect(() => {
     if (!tourOpen) return;
+    const step = steps[currentStep];
+    if (!step) return;
 
-    updateTargetRect();
+    const isInsideMore = ['contact-btn', 'profile-btn', 'settings-btn'].includes(step.targetKey);
+
+    if (isMobile) {
+      if (isInsideMore) {
+        setMobileMoreOpen(true);
+      } else {
+        setMobileMoreOpen(false);
+      }
+    }
+
+    if (step.targetKey === 'terminal-btn' && !terminalVisible) {
+      toggleTerminal();
+    }
+
+    const timer = setTimeout(() => {
+      updateTargetRect();
+    }, 80);
+
     const handleReposition = () => updateTargetRect();
 
     window.addEventListener('resize', handleReposition);
     window.addEventListener('scroll', handleReposition, true);
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', handleReposition);
       window.removeEventListener('scroll', handleReposition, true);
     };
-  }, [tourOpen, currentStep, updateTargetRect]);
+  }, [
+    tourOpen,
+    currentStep,
+    steps,
+    isMobile,
+    setMobileMoreOpen,
+    terminalVisible,
+    toggleTerminal,
+    updateTargetRect,
+  ]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {

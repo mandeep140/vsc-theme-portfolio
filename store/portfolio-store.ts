@@ -33,7 +33,7 @@ interface PortfolioStore {
   executeCommand: (command: string) => void;
   clearTerminal: () => void;
 
-  activeSidebarPanel: 'explorer' | 'search' | 'git' | 'extensions' | 'contact' | 'profile' | 'settings' | 'assistant';
+  activeSidebarPanel: 'explorer' | 'search' | 'git' | 'extensions' | 'contact' | 'profile' | 'settings' | 'assistant' | 'feedback';
   setActiveSidebarPanel: (panel: PortfolioStore['activeSidebarPanel']) => void;
   sidebarVisible: boolean;
   toggleSidebar: () => void;
@@ -51,6 +51,8 @@ interface PortfolioStore {
 
   isMobile: boolean;
   setIsMobile: (v: boolean) => void;
+  mobileMoreOpen: boolean;
+  setMobileMoreOpen: (v: boolean) => void;
 
   toasts: Toast[];
   showToast: (message: string) => void;
@@ -71,8 +73,8 @@ interface PortfolioStore {
   toggleWordWrap: () => void;
   tabSize: number;
   setTabSize: (size: number) => void;
-  cursorStyle: 'line' | 'block' | 'underline';
-  setCursorStyle: (style: 'line' | 'block' | 'underline') => void;
+  cursorStyle: 'line' | 'block' | 'underline' | 'none';
+  setCursorStyle: (style: 'line' | 'block' | 'underline' | 'none') => void;
   breadcrumbsVisible: boolean;
   toggleBreadcrumbs: () => void;
   resetSettings: () => void;
@@ -610,7 +612,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   sidebarVisible: true,
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   sidebarWidth: 240,
-  setSidebarWidth: (w: number) => set({ sidebarWidth: Math.max(170, Math.min(500, w)) }),
+  setSidebarWidth: (w: number) => set({ sidebarWidth: Math.max(230, Math.min(500, w)) }),
 
   terminalVisible: true,
   toggleTerminal: () => set((s) => ({ terminalVisible: !s.terminalVisible })),
@@ -637,6 +639,8 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       isMobile: v,
       sidebarVisible: s.isMobile === v ? s.sidebarVisible : v ? false : true,
     })),
+  mobileMoreOpen: false,
+  setMobileMoreOpen: (v: boolean) => set({ mobileMoreOpen: v }),
 
   commandPaletteOpen: false,
   toggleCommandPalette: () => set((s) => ({ commandPaletteOpen: !s.commandPaletteOpen })),
@@ -684,7 +688,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('portfolio_font_size', String(clamped));
-      } catch {}
+      } catch { }
     }
     set({ editorFontSize: clamped });
   },
@@ -697,7 +701,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('portfolio_line_numbers', String(next));
-        } catch {}
+        } catch { }
       }
       return { showLineNumbers: next };
     });
@@ -711,7 +715,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('portfolio_word_wrap', String(next));
-        } catch {}
+        } catch { }
       }
       return { wordWrap: next };
     });
@@ -723,18 +727,18 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('portfolio_tab_size', String(size));
-      } catch {}
+      } catch { }
     }
     set({ tabSize: size });
   },
 
-  cursorStyle: typeof window !== 'undefined' ? (localStorage.getItem('portfolio_cursor_style') as 'line' | 'block' | 'underline') || 'line' : 'line',
-  setCursorStyle: (style: 'line' | 'block' | 'underline') => {
+  cursorStyle: typeof window !== 'undefined' ? (localStorage.getItem('portfolio_cursor_style') as 'line' | 'block' | 'underline' | 'none') || 'line' : 'line',
+  setCursorStyle: (style: 'line' | 'block' | 'underline' | 'none') => {
     playToggleSound();
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('portfolio_cursor_style', style);
-      } catch {}
+      } catch { }
     }
     set({ cursorStyle: style });
   },
@@ -747,7 +751,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('portfolio_breadcrumbs', String(next));
-        } catch {}
+        } catch { }
       }
       return { breadcrumbsVisible: next };
     });
@@ -765,7 +769,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         localStorage.removeItem('portfolio_breadcrumbs');
         localStorage.removeItem('portfolio_sound_volume');
         localStorage.removeItem('portfolio_sound_enabled');
-      } catch {}
+      } catch { }
     }
     set({
       editorFontSize: 13,

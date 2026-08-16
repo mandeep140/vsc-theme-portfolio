@@ -10,6 +10,7 @@ import {
   UserCircle,
   Sparkles,
   Terminal as TerminalIcon,
+  MessageSquareQuote,
 } from 'lucide-react';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { playClickSound } from '@/lib/sound';
@@ -34,6 +35,7 @@ export default function ActivityBar() {
     { id: 'search' as const, icon: Search, label: 'Search' },
     { id: 'git' as const, icon: GitBranch, label: 'Source Control' },
     { id: 'assistant' as const, icon: Sparkles, label: 'AI Copilot' },
+    { id: 'feedback' as const, icon: MessageSquareQuote, label: 'Reviews & Feedback' },
     { id: 'extensions' as const, icon: Blocks, label: 'Extensions' },
     { id: 'contact' as const, icon: Mail, label: 'Contact' },
   ];

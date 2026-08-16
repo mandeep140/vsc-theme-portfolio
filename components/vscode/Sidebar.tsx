@@ -12,10 +12,11 @@ import { FileNode } from '@/data/portfolio-data';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import AssistantPanel from './AssistantPanel';
+import FeedbackPanel from './FeedbackPanel';
 import { playClickSound, playToggleSound, playToastSound } from '@/lib/sound';
 
 function getFileIconComponent(name: string) {
-  if (name.endsWith('.tsx')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 text-center flex-shrink-0">TSX</span> };
+  if (name.endsWith('.tsx')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 mr-1 text-center flex-shrink-0">TSX</span> };
   if (name.endsWith('.ts')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 text-center flex-shrink-0">TS</span> };
   if (name.endsWith('.md')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 text-center flex-shrink-0">MD</span> };
   if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.ico') || name.endsWith('.svg')) {
@@ -83,15 +84,14 @@ function FileTreeItem({
             playToggleSound();
             toggleFolder(node.id);
           }}
-          className={`w-full flex items-center gap-1 py-[3px] px-2 text-[13px] transition-all text-left cursor-pointer ${
-            isShaking
-              ? 'animate-shake-red border border-red-500/80 rounded bg-red-500/20'
-              : isDragOver
-                ? 'bg-red-500/15 border border-dashed border-red-500/60 rounded text-red-400'
-                : isLight
-                  ? 'text-[#333333] hover:bg-[#e8e8e8]'
-                  : 'text-[#cccccc] hover:bg-[#2a2d2e]'
-          }`}
+          className={`w-full flex items-center gap-1 py-[3px] px-2 text-[13px] transition-all text-left cursor-pointer ${isShaking
+            ? 'animate-shake-red border border-red-500/80 rounded bg-red-500/20'
+            : isDragOver
+              ? 'bg-red-500/15 border border-dashed border-red-500/60 rounded text-red-400'
+              : isLight
+                ? 'text-[#333333] hover:bg-[#e8e8e8]'
+                : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+            }`}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
         >
           {isExpanded ? (
@@ -168,19 +168,18 @@ function FileTreeItem({
         playClickSound();
         openFile(node);
       }}
-      className={`w-full flex items-center gap-1.5 py-[3px] px-2 text-[13px] transition-all text-left cursor-pointer ${
-        isShaking
-          ? 'animate-shake-red border border-red-500/80 rounded bg-red-500/20'
-          : isDragOver
-            ? 'bg-red-500/15 border border-dashed border-red-500/60 rounded'
-            : isActive
-              ? isLight
-                ? 'bg-[#d6ebff] text-[#004f9e] font-medium'
-                : 'bg-[#37373d] text-white font-medium'
-              : isLight
-                ? 'text-[#333333] hover:bg-[#e8e8e8]'
-                : 'text-[#cccccc] hover:bg-[#2a2d2e]'
-      }`}
+      className={`w-full flex items-center gap-1.5 py-[3px] px-2 text-[13px] transition-all text-left cursor-pointer ${isShaking
+        ? 'animate-shake-red border border-red-500/80 rounded bg-red-500/20'
+        : isDragOver
+          ? 'bg-red-500/15 border border-dashed border-red-500/60 rounded'
+          : isActive
+            ? isLight
+              ? 'bg-[#d6ebff] text-[#004f9e] font-medium'
+              : 'bg-[#37373d] text-white font-medium'
+            : isLight
+              ? 'text-[#333333] hover:bg-[#e8e8e8]'
+              : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+        }`}
       style={{ paddingLeft: `${depth * 16 + 8}px` }}
       title={node.name}
     >
@@ -205,7 +204,7 @@ function ExplorerPanel() {
 
     setShakingIds(newShaking);
     playToastSound();
-    showToast("you can change file places in read only mode, don't try or i need to build that also :')");
+    showToast("you can't change file places in read only mode, don't try or i need to build that also :')");
     setTimeout(() => {
       setShakingIds(new Set());
     }, 480);
@@ -575,7 +574,7 @@ function SettingsPanel() {
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem('portfolio_chat_history');
-      } catch {}
+      } catch { }
     }
     playToastSound();
     showToast('AI Chat history cleared');
@@ -766,10 +765,10 @@ function SettingsPanel() {
             <div className={`p-2.5 rounded border ${isLight ? 'bg-white border-[#e0e0e0]' : 'bg-[#2d2d2d]/60 border-[#3c3c3c]'}`}>
               <div className="flex items-center justify-between mb-2">
                 <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Cursor Style</p>
-                <span className={`text-[11px] font-mono capitalize ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>{cursorStyle}</span>
+                <span className={`text-[11px] font-mono capitalize ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>{cursorStyle === 'none' ? 'Off' : cursorStyle}</span>
               </div>
               <div className="flex gap-1.5">
-                {(['line', 'block', 'underline'] as const).map((style) => (
+                {(['line', 'block', 'underline', 'none'] as const).map((style) => (
                   <button
                     key={style}
                     type="button"
@@ -781,7 +780,7 @@ function SettingsPanel() {
                         : 'bg-[#1e1e1e] text-[#aaaaaa] border-[#3c3c3c] hover:bg-[#333333]'
                       }`}
                   >
-                    {style}
+                    {style === 'none' ? 'None' : style}
                   </button>
                 ))}
               </div>
@@ -942,6 +941,18 @@ export default function Sidebar() {
     document.addEventListener('mouseup', handleMouseUp);
   }, [setSidebarWidth]);
 
+  const panelTitles: Record<string, string> = {
+    explorer: 'Explorer',
+    search: 'Search Files',
+    git: 'Source Control (Git)',
+    extensions: 'Extensions',
+    contact: 'Contact Info',
+    profile: 'Developer Profile',
+    settings: 'Settings & Themes',
+    assistant: 'Gemini AI Copilot',
+    feedback: 'Reviews & Feedback',
+  };
+
   const sidebarContent = (
     <div
       className={`flex-shrink-0 flex flex-col h-full overflow-hidden border-r transition-colors duration-150 ${isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'
@@ -949,15 +960,15 @@ export default function Sidebar() {
       style={{ width: isMobile ? '100%' : sidebarWidth }}
     >
       {isMobile && (
-        <div className={`flex items-center justify-between px-3 py-2 border-b flex-shrink-0 ${isLight ? 'bg-[#e8e8e8] border-[#d8d8d8]' : 'bg-[#1f1f1f] border-[#2d2d2d]'
+        <div className={`flex items-center justify-between px-3.5 py-2.5 border-b flex-shrink-0 ${isLight ? 'bg-[#e8e8e8] border-[#d8d8d8]' : 'bg-[#1e1e1e] border-[#2d2d2d]'
           }`}>
-          <span className={`text-[12px] font-semibold uppercase tracking-wider ${isLight ? 'text-[#333333]' : 'text-[#cccccc]'}`}>
-            {activeSidebarPanel}
+          <span className={`text-[12.5px] font-semibold uppercase tracking-wider ${isLight ? 'text-[#24292f]' : 'text-[#e0e0e0]'}`}>
+            {panelTitles[activeSidebarPanel] || activeSidebarPanel}
           </span>
           <button
             type="button"
             onClick={toggleSidebar}
-            className={`p-1 rounded transition-colors ${isLight ? 'hover:bg-[#d0d0d0] text-[#333333]' : 'hover:bg-[#3c3c3c] text-[#cccccc]'
+            className={`p-1.5 rounded-md transition-colors cursor-pointer active:scale-95 ${isLight ? 'hover:bg-[#d0d0d0] text-[#333333]' : 'hover:bg-[#3c3c3c] text-[#cccccc]'
               }`}
             aria-label="Close sidebar"
           >
@@ -974,6 +985,7 @@ export default function Sidebar() {
       {activeSidebarPanel === 'profile' && <ProfilePanel />}
       {activeSidebarPanel === 'settings' && <SettingsPanel />}
       {activeSidebarPanel === 'assistant' && <AssistantPanel />}
+      {activeSidebarPanel === 'feedback' && <FeedbackPanel />}
     </div>
   );
 
@@ -986,7 +998,8 @@ export default function Sidebar() {
           onClick={toggleSidebar}
         />
         <div
-          className="fixed left-0 top-0 bottom-[48px] w-[82vw] max-w-[320px] z-50 animate-slideInLeft shadow-2xl overflow-hidden"
+          className={`fixed left-0 top-0 bottom-[48px] w-[86vw] max-w-[340px] z-50 animate-slideInLeft shadow-2xl overflow-hidden rounded-r-xl border-r ${isLight ? 'border-[#d0d0d0]' : 'border-[#3c3c3c]'
+            }`}
           style={{ willChange: 'transform' }}
         >
           {sidebarContent}

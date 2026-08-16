@@ -478,6 +478,10 @@ export default function TitleBar() {
       action: () => setActiveSidebarPanel('extensions'),
     },
     {
+      label: 'Reviews & Feedback',
+      action: () => setActiveSidebarPanel('feedback'),
+    },
+    {
       label: 'Contact Info',
       action: () => setActiveSidebarPanel('contact'),
     },

@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Eye, Code, Sparkles } from 'lucide-react';
+import { X, Eye, Code, Sparkles, FolderKanban, Terminal as TerminalIcon, Mail, Sliders, Settings, FileCode } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { findFileById, fileTree } from '@/data/portfolio-data';
+import Image from 'next/image';
 import WelcomeStats from './WelcomeStats';
 import { playClickSound } from '@/lib/sound';
 
@@ -17,11 +18,10 @@ function EditorTabs() {
 
   return (
     <div
-      className={`flex items-center border-b overflow-x-auto flex-shrink-0 scrollbar-hide transition-colors duration-150 ${
-        isLight
-          ? 'bg-[#f3f3f3] border-[#e4e4e4]'
-          : 'bg-[#252526] border-[#1e1e1e]'
-      }`}
+      className={`flex items-center border-b overflow-x-auto flex-shrink-0 scrollbar-hide transition-colors duration-150 ${isLight
+        ? 'bg-[#f3f3f3] border-[#e4e4e4]'
+        : 'bg-[#252526] border-[#1e1e1e]'
+        }`}
     >
       {openTabs.map((tab) => {
         const isActive = tab.id === activeTabId;
@@ -33,29 +33,27 @@ function EditorTabs() {
               playClickSound();
               setActiveTab(tab.id);
             }}
-            className={`group flex items-center gap-1.5 h-[35px] px-2 md:px-3 border-r cursor-pointer min-w-0 transition-colors duration-100 ${
-              isActive
-                ? isLight
-                  ? 'bg-white border-t-[2px] border-t-[#007acc] border-r-[#e4e4e4] text-[#111111] font-medium shadow-xs'
-                  : 'bg-[#1e1e1e] border-t-[2px] border-t-white border-r-[#252526] text-white font-medium'
-                : isLight
-                  ? 'bg-[#ececec] border-t-[2px] border-t-transparent border-r-[#e4e4e4] text-[#555555] hover:bg-[#e0e0e0]'
-                  : 'bg-[#2d2d2d] border-t-[2px] border-t-transparent border-r-[#252526] text-[#969696] hover:bg-[#2a2a2a]'
-            }`}
+            className={`group flex items-center gap-1.5 h-[35px] px-2 md:px-3 border-r cursor-pointer min-w-0 transition-colors duration-100 ${isActive
+              ? isLight
+                ? 'bg-white border-t-[2px] border-t-[#007acc] border-r-[#e4e4e4] text-[#111111] font-medium shadow-xs'
+                : 'bg-[#1e1e1e] border-t-[2px] border-t-white border-r-[#252526] text-white font-medium'
+              : isLight
+                ? 'bg-[#ececec] border-t-[2px] border-t-transparent border-r-[#e4e4e4] text-[#555555] hover:bg-[#e0e0e0]'
+                : 'bg-[#2d2d2d] border-t-[2px] border-t-transparent border-r-[#252526] text-[#969696] hover:bg-[#2a2a2a]'
+              }`}
             style={{ maxWidth: isMobile ? '130px' : '190px' }}
           >
             <span
-              className={`text-[11px] font-bold flex-shrink-0 ${
-                tab.language === 'tsx'
+              className={`text-[11px] font-bold flex-shrink-0 ${tab.language === 'tsx'
+                ? 'text-[#519aba]'
+                : tab.language === 'typescript'
                   ? 'text-[#519aba]'
-                  : tab.language === 'typescript'
+                  : tab.language === 'markdown'
                     ? 'text-[#519aba]'
-                    : tab.language === 'markdown'
-                      ? 'text-[#519aba]'
-                      : tab.language === 'binary'
-                        ? 'text-[#a074c4]'
-                        : 'text-[#858585]'
-              }`}
+                    : tab.language === 'binary'
+                      ? 'text-[#a074c4]'
+                      : 'text-[#858585]'
+                }`}
             >
               {tab.language === 'typescript'
                 ? 'TS'
@@ -75,15 +73,14 @@ function EditorTabs() {
                 playClickSound();
                 closeTab(tab.id);
               }}
-              className={`ml-auto p-0.5 rounded transition-all flex-shrink-0 ${
-                isActive
-                  ? isLight
-                    ? 'opacity-70 hover:opacity-100 hover:bg-[#dedede]'
-                    : 'opacity-70 hover:opacity-100 hover:bg-[#404040]'
-                  : isLight
-                    ? 'opacity-0 group-hover:opacity-100 hover:bg-[#dedede]'
-                    : 'opacity-0 group-hover:opacity-100 hover:bg-[#404040]'
-              }`}
+              className={`ml-auto p-0.5 rounded transition-all flex-shrink-0 ${isActive
+                ? isLight
+                  ? 'opacity-70 hover:opacity-100 hover:bg-[#dedede]'
+                  : 'opacity-70 hover:opacity-100 hover:bg-[#404040]'
+                : isLight
+                  ? 'opacity-0 group-hover:opacity-100 hover:bg-[#dedede]'
+                  : 'opacity-0 group-hover:opacity-100 hover:bg-[#404040]'
+                }`}
               aria-label={`Close ${tab.name}`}
             >
               <X className="w-3.5 h-3.5" />
@@ -119,7 +116,6 @@ function HighlightedCode({ content, language }: { content: string; language?: st
     x: gutterWidth,
     y: 16,
   });
-  const [scrollOffset, setScrollOffset] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const isLight = theme === 'light';
   const normalizedLanguage =
@@ -134,25 +130,12 @@ function HighlightedCode({ content, language }: { content: string; language?: st
   const editorTheme = isLight ? lightEditorTheme : darkEditorTheme;
   const bgColor = isLight ? '#ffffff' : '#1e1e1e';
 
-  useEffect(() => {
-    const pre = containerRef.current?.querySelector('pre');
-    if (!pre) return;
-
-    const handleScroll = () => {
-      setScrollOffset({ left: pre.scrollLeft, top: pre.scrollTop });
-    };
-
-    pre.addEventListener('scroll', handleScroll, { passive: true });
-    return () => pre.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleCodeClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const pre = containerRef.current?.querySelector('pre');
-    if (!pre) return;
+    if (!containerRef.current) return;
 
-    const rect = pre.getBoundingClientRect();
-    const clickX = e.clientX - rect.left + pre.scrollLeft;
-    const clickY = e.clientY - rect.top + pre.scrollTop;
+    const rect = containerRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left + containerRef.current.scrollLeft;
+    const clickY = e.clientY - rect.top + containerRef.current.scrollTop;
 
     const lineIdx = Math.max(0, Math.min(lines.length - 1, Math.floor((clickY - 16) / lineHeight)));
     const lineText = lines[lineIdx] || '';
@@ -164,73 +147,73 @@ function HighlightedCode({ content, language }: { content: string; language?: st
     setCursorPos({ x: targetX, y: targetY });
   };
 
-  const renderCursorX = cursorPos.x - scrollOffset.left;
-  const renderCursorY = cursorPos.y - scrollOffset.top;
-  const isCursorVisible = renderCursorX >= 0 && renderCursorY >= 0;
+  const isCursorVisible = cursorStyle !== 'none';
+  const cursorBlockWidth = Math.max(8, Math.round(editorFontSize * 0.58));
 
   return (
     <div
       ref={containerRef}
       onClick={handleCodeClick}
-      className={`flex flex-1 min-h-0 overflow-hidden relative cursor-text animate-fadeIn ${
-        isLight ? 'bg-white' : 'bg-[#1e1e1e]'
-      }`}
+      className={`flex-1 min-h-0 overflow-auto relative cursor-text animate-fadeIn ${isLight ? 'bg-white' : 'bg-[#1e1e1e]'
+        }`}
     >
-      <SyntaxHighlighter
-        language={normalizedLanguage}
-        style={editorTheme}
-        showLineNumbers={showLineNumbers}
-        wrapLines={wordWrap}
-        wrapLongLines={wordWrap}
-        lineNumberStyle={{
-          minWidth: `${minLineNumberWidth}px`,
-          paddingRight: '16px',
-          paddingLeft: '12px',
-          color: isLight ? '#9e9e9e' : '#858585',
-          textAlign: 'right',
-          userSelect: 'none',
-          fontSize: `${editorFontSize}px`,
-          lineHeight: `${lineHeight}px`,
-          fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
-        }}
-        customStyle={{
-          margin: 0,
-          padding: showLineNumbers ? `16px 16px 16px 0` : '16px',
-          background: bgColor,
-          fontSize: `${editorFontSize}px`,
-          lineHeight: `${lineHeight}px`,
-          fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
-          width: '100%',
-          height: '100%',
-          overflow: 'auto',
-          whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
-          wordBreak: wordWrap ? 'break-word' : 'normal',
-        }}
-        codeTagProps={{
-          style: {
-            fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
+      <div className="relative min-w-full inline-block min-h-full">
+        <SyntaxHighlighter
+          language={normalizedLanguage}
+          style={editorTheme}
+          showLineNumbers={showLineNumbers}
+          wrapLines={wordWrap}
+          wrapLongLines={wordWrap}
+          lineNumberStyle={{
+            minWidth: `${minLineNumberWidth}px`,
+            paddingRight: '16px',
+            paddingLeft: '12px',
+            color: isLight ? '#9e9e9e' : '#858585',
+            textAlign: 'right',
+            userSelect: 'none',
             fontSize: `${editorFontSize}px`,
             lineHeight: `${lineHeight}px`,
+            fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
+          }}
+          customStyle={{
+            margin: 0,
+            padding: showLineNumbers ? `16px 16px 16px 0` : '16px',
+            background: bgColor,
+            fontSize: `${editorFontSize}px`,
+            lineHeight: `${lineHeight}px`,
+            fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
+            width: '100%',
+            overflow: 'visible',
             whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
             wordBreak: wordWrap ? 'break-word' : 'normal',
-          },
-        }}
-      >
-        {content}
-      </SyntaxHighlighter>
-      {isCursorVisible && (
-        <span
-          className="editor-blinking-cursor absolute pointer-events-none transition-all duration-75"
-          style={{
-            backgroundColor: isLight ? '#007acc' : '#aeafad',
-            width: cursorStyle === 'block' ? `${Math.max(8, Math.round(editorFontSize * 0.58))}px` : '2px',
-            height: cursorStyle === 'underline' ? '2px' : `${lineHeight - 4}px`,
-            left: `${renderCursorX}px`,
-            top: cursorStyle === 'underline' ? `${renderCursorY + lineHeight - 6}px` : `${renderCursorY}px`,
-            opacity: cursorStyle === 'block' ? 0.75 : 1,
           }}
-        />
-      )}
+          codeTagProps={{
+            style: {
+              fontFamily: 'Menlo, Monaco, "SF Mono", Consolas, "Liberation Mono", "Courier New", monospace',
+              fontSize: `${editorFontSize}px`,
+              lineHeight: `${lineHeight}px`,
+              whiteSpace: wordWrap ? 'pre-wrap' : 'pre',
+              wordBreak: wordWrap ? 'break-word' : 'normal',
+            },
+          }}
+        >
+          {content}
+        </SyntaxHighlighter>
+
+        {isCursorVisible && (
+          <span
+            className="editor-blinking-cursor absolute pointer-events-none"
+            style={{
+              backgroundColor: isLight ? '#007acc' : '#aeafad',
+              width: cursorStyle === 'block' ? `${cursorBlockWidth}px` : cursorStyle === 'underline' ? `${cursorBlockWidth}px` : '2px',
+              height: cursorStyle === 'underline' ? '2px' : `${lineHeight - 2}px`,
+              left: `${cursorPos.x}px`,
+              top: cursorStyle === 'underline' ? `${cursorPos.y + lineHeight - 3}px` : `${cursorPos.y + 1}px`,
+              opacity: cursorStyle === 'block' ? 0.65 : 1,
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -300,9 +283,8 @@ function MarkdownPreview({ content }: { content: string }) {
 
   return (
     <div
-      className={`flex-1 min-h-0 overflow-auto p-6 md:p-10 leading-relaxed transition-colors duration-150 ${
-        isLight ? 'bg-white text-[#24292f]' : 'bg-[#1e1e1e] text-[#cccccc]'
-      }`}
+      className={`flex-1 min-h-0 overflow-auto p-6 md:p-10 leading-relaxed transition-colors duration-150 ${isLight ? 'bg-white text-[#24292f]' : 'bg-[#1e1e1e] text-[#cccccc]'
+        }`}
       style={{ fontSize: `${editorFontSize}px`, lineHeight: 1.65 }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
@@ -322,9 +304,8 @@ function ImagePreview({ file }: { file: { name: string; id: string } }) {
   if (isImageFile) {
     return (
       <div
-        className={`flex-1 min-h-0 overflow-auto flex items-center justify-center p-4 ${
-          isLight ? 'bg-[#f8f8f8]' : 'bg-[#1e1e1e]'
-        }`}
+        className={`flex-1 min-h-0 overflow-auto flex items-center justify-center p-4 ${isLight ? 'bg-[#f8f8f8]' : 'bg-[#1e1e1e]'
+          }`}
       >
         <img
           src={`/images/${file.name}`}
@@ -337,17 +318,15 @@ function ImagePreview({ file }: { file: { name: string; id: string } }) {
 
   return (
     <div
-      className={`flex-1 min-h-0 overflow-auto flex items-center justify-center ${
-        isLight ? 'bg-white' : 'bg-[#1e1e1e]'
-      }`}
+      className={`flex-1 min-h-0 overflow-auto flex items-center justify-center ${isLight ? 'bg-white' : 'bg-[#1e1e1e]'
+        }`}
     >
       <div className="flex flex-col items-center gap-4 text-center">
         <div
-          className={`w-40 h-40 rounded-lg flex items-center justify-center border shadow-sm ${
-            isLight
-              ? 'bg-[#f0f0f0] border-[#d8d8d8] text-[#333333]'
-              : 'bg-[#2d2d30] border-[#3c3c3c] text-white'
-          }`}
+          className={`w-40 h-40 rounded-lg flex items-center justify-center border shadow-sm ${isLight
+            ? 'bg-[#f0f0f0] border-[#d8d8d8] text-[#333333]'
+            : 'bg-[#2d2d30] border-[#3c3c3c] text-white'
+            }`}
         >
           <span className="text-3xl font-bold opacity-80">IMG</span>
         </div>
@@ -368,11 +347,10 @@ function Breadcrumbs({ path }: { path: string[] }) {
 
   return (
     <div
-      className={`flex items-center gap-1 px-3 md:px-4 py-1 text-[12px] flex-shrink-0 overflow-x-auto scrollbar-hide border-b transition-colors duration-150 ${
-        isLight
-          ? 'bg-white border-[#e4e4e4] text-[#6e7781]'
-          : 'bg-[#1e1e1e] border-[#252526] text-[#858585]'
-      }`}
+      className={`flex items-center gap-1 px-3 md:px-4 py-1 text-[12px] flex-shrink-0 overflow-x-auto scrollbar-hide border-b transition-colors duration-150 ${isLight
+        ? 'bg-white border-[#e4e4e4] text-[#6e7781]'
+        : 'bg-[#1e1e1e] border-[#252526] text-[#858585]'
+        }`}
     >
       {path.map((segment, i) => (
         <span key={i} className="flex items-center gap-1 flex-shrink-0">
@@ -397,69 +375,196 @@ function Breadcrumbs({ path }: { path: string[] }) {
 }
 
 function EmptyEditor() {
-  const { toggleSidebar, toggleTerminal, isMobile, theme, startTour } = usePortfolioStore();
+  const {
+    toggleSidebar,
+    toggleTerminal,
+    isMobile,
+    theme,
+    startTour,
+    setActiveSidebarPanel,
+    sidebarVisible,
+    openFile,
+    toggleCommandPalette,
+  } = usePortfolioStore();
   const isLight = theme === 'light';
+
+  const handleOpenPanel = (panel: 'assistant' | 'feedback' | 'contact' | 'settings' | 'explorer') => {
+    playClickSound();
+    setActiveSidebarPanel(panel);
+  };
+
+  const handleOpenFileByName = (fileName: string) => {
+    playClickSound();
+    const allFiles = (function flatten(nodes: typeof fileTree): (typeof fileTree) {
+      return nodes.flatMap((n) => (n.type === 'file' ? [n] : n.children ? flatten(n.children) : []));
+    })(fileTree);
+
+    const target = allFiles.find((f) => f.name.toLowerCase() === fileName.toLowerCase() || f.id.includes(fileName));
+    if (target) openFile(target);
+  };
 
   return (
     <div
-      className={`relative flex-1 min-h-0 flex items-center justify-center transition-colors duration-150 animate-fadeIn ${
-        isLight ? 'bg-white' : 'bg-[#1e1e1e]'
-      }`}
+      className={`relative flex-1 min-h-0 overflow-y-auto p-4 md:p-8 flex items-center justify-center transition-colors duration-150 animate-fadeIn select-none ${isLight ? 'bg-white text-[#24292f]' : 'bg-[#1e1e1e] text-[#cccccc]'
+        }`}
     >
       <button
         type="button"
         onClick={startTour}
-        className={`absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded text-xs transition-all duration-200 cursor-pointer border hover:-translate-y-0.5 active:scale-95 shadow-2xs ${
-          isLight
-            ? 'bg-[#f4f4f4] border-[#d8d8d8] text-[#555555] hover:border-[#007acc] hover:text-[#007acc]'
-            : 'bg-[#252526] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
-        }`}
-        title="Start Feature Tour"
+        className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer border hover:-translate-y-0.5 active:scale-95 shadow-xs ${isLight
+          ? 'bg-[#f8f8f8] border-[#d8d8d8] text-[#333333] hover:border-[#007acc] hover:text-[#007acc]'
+          : 'bg-[#252526] border-[#3c3c3c] text-[#cccccc] hover:border-[#007fd4] hover:text-white'
+          }`}
+        title="Start Interactive Feature Tour"
       >
-        <Sparkles className="w-3 h-3 text-[#007acc]" />
-        <span>Tour</span>
+        <Sparkles className="w-3.5 h-3.5 text-[#007acc]" />
+        <span>Feature Tour</span>
       </button>
 
-      <div className="text-center px-4 max-w-md mx-auto">
-        <div
-          className={`text-4xl md:text-6xl mb-4 font-mono select-none transition-transform duration-300 hover:scale-105 ${
-            isLight ? 'opacity-15 text-black' : 'opacity-20 text-white'
-          }`}
-        >
-          {'</>'}
+      <div className="w-full max-w-2xl mx-auto my-auto py-2 text-center">
+        <div className="mb-6">
+          <h1 className={`text-xl md:text-2xl font-bold tracking-tight mb-1 ${isLight ? 'text-[#111111]' : 'text-white'}`}>
+            Mandeep Nagar
+          </h1>
+          <p className={`text-xs md:text-sm font-medium mb-3 ${isLight ? 'text-[#555555]' : 'text-[#969696]'}`}>
+            Full Stack Software Engineer & CTO
+          </p>
+
+          <div className="flex justify-center">
+            <WelcomeStats isLight={isLight} />
+          </div>
         </div>
-        <p className={`text-base md:text-lg font-semibold mb-1 ${isLight ? 'text-[#111111]' : 'text-white'}`}>
-          Mandeep Nagar
-        </p>
-        <p className={`text-sm ${isLight ? 'text-[#6e7781]' : 'text-[#858585]'}`}>Full Stack Developer</p>
-        <WelcomeStats isLight={isLight} />
-        <div className="mt-4 flex flex-col items-center gap-2 text-xs">
-          {!isMobile && (
-            <>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 mb-6 text-left">
+          <button
+            type="button"
+            onClick={() => handleOpenFileByName('index.ts')}
+            className={`group p-3 rounded-xl border transition-all duration-150 cursor-pointer active:scale-98 ${isLight
+              ? 'bg-[#fafafa] border-[#e4e4e4] hover:bg-[#f0f0f0] hover:border-[#007acc]/50'
+              : 'bg-[#252526] border-[#333333] hover:bg-[#2d2d2d] hover:border-[#007fd4]/50'
+              }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <FolderKanban className="w-4 h-4 text-[#007acc] group-hover:scale-110 transition-transform" />
+              <span className="text-[12.5px] font-semibold">Index</span>
+            </div>
+            <p className={`text-[11px] leading-tight ${isLight ? 'text-[#666666]' : 'text-[#888888]'}`}>
+              Always start with index file
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenPanel('assistant')}
+            className={`group p-3 rounded-xl border transition-all duration-150 cursor-pointer active:scale-98 ${isLight
+              ? 'bg-[#fafafa] border-[#e4e4e4] hover:bg-[#f0f0f0] hover:border-[#007acc]/50'
+              : 'bg-[#252526] border-[#333333] hover:bg-[#2d2d2d] hover:border-[#007fd4]/50'
+              }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-4 h-4 text-[#007acc] group-hover:scale-110 transition-transform" />
+              <span className="text-[12.5px] font-semibold">AI Copilot</span>
+            </div>
+            <p className={`text-[11px] leading-tight ${isLight ? 'text-[#666666]' : 'text-[#888888]'}`}>
+              Ask Gemini AI assistant
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              playClickSound();
+              toggleTerminal();
+            }}
+            className={`group p-3 rounded-xl border transition-all duration-150 cursor-pointer active:scale-98 ${isLight
+              ? 'bg-[#fafafa] border-[#e4e4e4] hover:bg-[#f0f0f0] hover:border-[#007acc]/50'
+              : 'bg-[#252526] border-[#333333] hover:bg-[#2d2d2d] hover:border-[#007fd4]/50'
+              }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <TerminalIcon className="w-4 h-4 text-[#007acc] group-hover:scale-110 transition-transform" />
+              <span className="text-[12.5px] font-semibold">Terminal</span>
+            </div>
+            <p className={`text-[11px] leading-tight ${isLight ? 'text-[#666666]' : 'text-[#888888]'}`}>
+              Built-in command shell
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              playClickSound();
+              toggleCommandPalette();
+            }}
+            className={`group p-3 rounded-xl border transition-all duration-150 cursor-pointer active:scale-98 ${isLight
+              ? 'bg-[#fafafa] border-[#e4e4e4] hover:bg-[#f0f0f0] hover:border-[#007acc]/50'
+              : 'bg-[#252526] border-[#333333] hover:bg-[#2d2d2d] hover:border-[#007fd4]/50'
+              }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Sliders className="w-4 h-4 text-[#007acc] group-hover:scale-110 transition-transform" />
+              <span className="text-[12.5px] font-semibold">Commands</span>
+            </div>
+            <p className={`text-[11px] leading-tight ${isLight ? 'text-[#666666]' : 'text-[#888888]'}`}>
+              Quick command palette
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenPanel('contact')}
+            className={`group p-3 rounded-xl border transition-all duration-150 cursor-pointer active:scale-98 ${isLight
+              ? 'bg-[#fafafa] border-[#e4e4e4] hover:bg-[#f0f0f0] hover:border-[#007acc]/50'
+              : 'bg-[#252526] border-[#333333] hover:bg-[#2d2d2d] hover:border-[#007fd4]/50'
+              }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Mail className="w-4 h-4 text-[#007acc] group-hover:scale-110 transition-transform" />
+              <span className="text-[12.5px] font-semibold">Contact</span>
+            </div>
+            <p className={`text-[11px] leading-tight ${isLight ? 'text-[#666666]' : 'text-[#888888]'}`}>
+              Get in touch directly
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleOpenPanel('settings')}
+            className={`group p-3 rounded-xl border transition-all duration-150 cursor-pointer active:scale-98 ${isLight
+              ? 'bg-[#fafafa] border-[#e4e4e4] hover:bg-[#f0f0f0] hover:border-[#007acc]/50'
+              : 'bg-[#252526] border-[#333333] hover:bg-[#2d2d2d] hover:border-[#007fd4]/50'
+              }`}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Settings className="w-4 h-4 text-[#007acc] group-hover:scale-110 transition-transform" />
+              <span className="text-[12.5px] font-semibold">Settings</span>
+            </div>
+            <p className={`text-[11px] leading-tight ${isLight ? 'text-[#666666]' : 'text-[#888888]'}`}>
+              Themes & preferences
+            </p>
+          </button>
+        </div>
+
+        <div>
+          <div className={`text-[11px] font-semibold uppercase tracking-wider mb-2.5 opacity-60 ${isLight ? 'text-[#333333]' : 'text-[#cccccc]'}`}>
+            Featured Source Files
+          </div>
+          <div className="flex items-center justify-center gap-2 flex-wrap text-xs">
+            {['index.ts', 'skills.ts', 'experience.ts', 'contact.ts'].map((fileName) => (
               <button
+                key={fileName}
                 type="button"
-                onClick={toggleSidebar}
-                className={`px-3.5 py-1.5 rounded transition-all duration-150 cursor-pointer border hover:-translate-y-0.5 active:scale-95 shadow-2xs ${
-                  isLight
-                    ? 'bg-[#f4f4f4] border-[#d4d4d4] text-[#24292f] hover:bg-[#eaeaea]'
-                    : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#cccccc] hover:bg-[#37373d]'
-                }`}
+                onClick={() => handleOpenFileByName(fileName)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-mono text-[11px] transition-all cursor-pointer hover:-translate-y-0.5 active:scale-95 ${isLight
+                  ? 'bg-[#f4f4f4] border-[#d8d8d8] text-[#24292f] hover:border-[#007acc] hover:text-[#007acc]'
+                  : 'bg-[#252526] border-[#3c3c3c] text-[#cccccc] hover:border-[#007fd4] hover:text-white'
+                  }`}
               >
-                Ctrl+B — Toggle Sidebar
+                <FileCode className="w-3 h-3 text-[#519aba]" />
+                <span>{fileName}</span>
               </button>
-              <button
-                type="button"
-                onClick={toggleTerminal}
-                className={`px-3.5 py-1.5 rounded transition-all duration-150 cursor-pointer border hover:-translate-y-0.5 active:scale-95 shadow-2xs ${
-                  isLight
-                    ? 'bg-[#f4f4f4] border-[#d4d4d4] text-[#24292f] hover:bg-[#eaeaea]'
-                    : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#cccccc] hover:bg-[#37373d]'
-                }`}
-              >
-                Ctrl+` — Toggle Terminal
-              </button>
-            </>
-          )}
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -509,15 +614,14 @@ export default function EditorPanel() {
       onDragEnter={() => setIsDragOverEditor(true)}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`relative flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden transition-all duration-150 ${
-        isDragOverEditor
-          ? isLight
-            ? 'bg-[#e6f4ff] ring-2 ring-inset ring-[#007acc]'
-            : 'bg-[#002f5e]/30 ring-2 ring-inset ring-[#007acc]'
-          : isLight
-            ? 'bg-white'
-            : 'bg-[#1e1e1e]'
-      }`}
+      className={`relative flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden transition-all duration-150 ${isDragOverEditor
+        ? isLight
+          ? 'bg-[#e6f4ff] ring-2 ring-inset ring-[#007acc]'
+          : 'bg-[#002f5e]/30 ring-2 ring-inset ring-[#007acc]'
+        : isLight
+          ? 'bg-white'
+          : 'bg-[#1e1e1e]'
+        }`}
     >
       {isDragOverEditor && (
         <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center bg-[#007acc]/10 backdrop-blur-[2px] animate-fadeIn">
@@ -530,24 +634,22 @@ export default function EditorPanel() {
       {activeTab && activeTab.path.length > 0 && <Breadcrumbs path={activeTab.path} />}
       {isMarkdown && (
         <div
-          className={`flex items-center gap-1 px-3 py-1 border-b flex-shrink-0 transition-colors duration-150 ${
-            isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#2d2d2d] border-[#252526]'
-          }`}
+          className={`flex items-center gap-1 px-3 py-1 border-b flex-shrink-0 transition-colors duration-150 ${isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#2d2d2d] border-[#252526]'
+            }`}
         >
           <button
             type="button"
             onClick={() => {
               if (mdPreviewMode) toggleMdPreview();
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[12px] font-medium transition-colors cursor-pointer ${
-              !mdPreviewMode
-                ? isLight
-                  ? 'bg-white text-black shadow-xs border border-[#d0d0d0]'
-                  : 'bg-[#1e1e1e] text-white'
-                : isLight
-                  ? 'text-[#6e7781] hover:text-[#111111]'
-                  : 'text-[#858585] hover:text-[#cccccc]'
-            }`}
+            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[12px] font-medium transition-colors cursor-pointer ${!mdPreviewMode
+              ? isLight
+                ? 'bg-white text-black shadow-xs border border-[#d0d0d0]'
+                : 'bg-[#1e1e1e] text-white'
+              : isLight
+                ? 'text-[#6e7781] hover:text-[#111111]'
+                : 'text-[#858585] hover:text-[#cccccc]'
+              }`}
           >
             <Code className="w-3.5 h-3.5" /> Source
           </button>
@@ -556,15 +658,14 @@ export default function EditorPanel() {
             onClick={() => {
               if (!mdPreviewMode) toggleMdPreview();
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[12px] font-medium transition-colors cursor-pointer ${
-              mdPreviewMode
-                ? isLight
-                  ? 'bg-white text-black shadow-xs border border-[#d0d0d0]'
-                  : 'bg-[#1e1e1e] text-white'
-                : isLight
-                  ? 'text-[#6e7781] hover:text-[#111111]'
-                  : 'text-[#858585] hover:text-[#cccccc]'
-            }`}
+            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[12px] font-medium transition-colors cursor-pointer ${mdPreviewMode
+              ? isLight
+                ? 'bg-white text-black shadow-xs border border-[#d0d0d0]'
+                : 'bg-[#1e1e1e] text-white'
+              : isLight
+                ? 'text-[#6e7781] hover:text-[#111111]'
+                : 'text-[#858585] hover:text-[#cccccc]'
+              }`}
           >
             <Eye className="w-3.5 h-3.5" /> Preview
           </button>
