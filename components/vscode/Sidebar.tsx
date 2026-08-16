@@ -19,8 +19,9 @@ function getFileIconComponent(name: string) {
   if (name.endsWith('.tsx')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 mr-1 text-center flex-shrink-0">TSX</span> };
   if (name.endsWith('.ts')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 text-center flex-shrink-0">TS</span> };
   if (name.endsWith('.md')) return { icon: <span className="text-[#519aba] text-[11px] font-bold w-4 text-center flex-shrink-0">MD</span> };
+  if (name.endsWith('.pdf')) return { icon: <span className="text-[#e05555] text-[11px] font-bold w-4 mr-1 text-center flex-shrink-0">PDF</span> };
   if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.ico') || name.endsWith('.svg')) {
-    return { icon: <span className="text-[#a074c4] text-[11px] font-bold w-4 text-center flex-shrink-0">IMG</span> };
+    return { icon: <span className="text-[#a074c4] text-[11px] font-bold w-4 mr-1 text-center flex-shrink-0">IMG</span> };
   }
   return { icon: <File className="w-4 h-4 text-[#858585] flex-shrink-0" /> };
 }
@@ -886,7 +887,7 @@ function SettingsPanel() {
               }`}>
               <div>
                 <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Shell</p>
-                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v1.0.0</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v1.1.0</p>
               </div>
               <AlignJustify className="w-4 h-4 text-[#858585]" />
             </div>
@@ -896,7 +897,7 @@ function SettingsPanel() {
         <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
           <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
           <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>VS Code Portfolio</p>
-          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 1.0.0</p>
+          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 1.1.0</p>
           <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Next.js 16 / React 19 / Turbopack</p>
           <button
             type="button"

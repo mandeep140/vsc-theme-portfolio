@@ -221,12 +221,14 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
             { type: 'output', content: '  showa-track.ts' },
             { type: 'output', content: '  showa-store-management.ts' },
             { type: 'output', content: '  vscode-portfolio.tsx' },
+            { type: 'output', content: '  local-bazaar.ts' },
           ];
         } else if (dir === 'experience' || dir === 'experience/') {
           output = [
             { type: 'info', content: 'experience/' },
             { type: 'output', content: '  cto-showa.ts' },
-            { type: 'output', content: '  freelance-quick-venu.ts' },
+            { type: 'output', content: '  freelance-independent.ts' },
+            { type: 'output', content: '  freelance-quick-venue.ts' },
             { type: 'output', content: '  stc-member.ts' },
           ];
         } else if (dir === 'education' || dir === 'education/') {
@@ -234,11 +236,29 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
             { type: 'info', content: 'education/' },
             { type: 'output', content: '  iit-patna-bs.ts' },
             { type: 'output', content: '  senior-secondary.ts' },
+            { type: 'output', content: '  secondary.ts' },
           ];
         } else if (dir === 'images' || dir === 'images/') {
           output = [
             { type: 'info', content: 'images/' },
+            { type: 'output', content: '  my.png' },
+            { type: 'output', content: '  logo.png' },
             { type: 'output', content: '  white_logo.png' },
+            { type: 'output', content: '  award.jpeg' },
+            { type: 'output', content: '  award2.jpeg' },
+            { type: 'output', content: '  hackNtech2.0.jpeg' },
+            { type: 'output', content: '  hackNtech2.0_poster.png' },
+            { type: 'output', content: '  hackNtech3.0.jpeg' },
+            { type: 'output', content: '  idea_station_poster.png' },
+            { type: 'output', content: '  pixel_pulse_certificate.jpeg' },
+            { type: 'output', content: '  pixel_pulse_poster.png' },
+            { type: 'output', content: '  tech_crew.jpeg' },
+            { type: 'output', content: '  tech_team.jpeg' },
+          ];
+        } else if (dir === 'files' || dir === 'files/') {
+          output = [
+            { type: 'info', content: 'files/' },
+            { type: 'output', content: '  mandeep_resume.pdf' },
           ];
         } else {
           output = [
@@ -247,8 +267,10 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
             { type: 'output', content: '  experience/' },
             { type: 'output', content: '  education/' },
             { type: 'output', content: '  images/' },
+            { type: 'output', content: '  files/' },
             { type: 'output', content: '  index.ts' },
             { type: 'output', content: '  skills.ts' },
+            { type: 'output', content: '  achievements.ts' },
             { type: 'output', content: '  contact.ts' },
             { type: 'info', content: '  README.md' },
           ];
@@ -316,14 +338,15 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
 
       case 'projects':
         output = [
-          { type: 'highlight', content: '+--------------------------------------------------+' },
-          { type: 'highlight', content: '|  #  Project                   Year    Status   |' },
-          { type: 'highlight', content: '+--------------------------------------------------+' },
-          { type: 'output', content: '|  1  AdJmd Platform            2025    Done     |' },
-          { type: 'output', content: '|  2  Showa Track               2025    Done     |' },
-          { type: 'output', content: '|  3  Showa Store Mgmt          2025    Done     |' },
-          { type: 'output', content: '|  4  VS Code Portfolio         2026    Done     |' },
-          { type: 'highlight', content: '+--------------------------------------------------+' },
+          { type: 'highlight', content: '+----------------------------------------------------+' },
+          { type: 'highlight', content: '|  #  Project                   Period    Status   |' },
+          { type: 'highlight', content: '+----------------------------------------------------+' },
+          { type: 'output', content: '|  1  AdJmd Platform            Jun-Jul 2025  Done |' },
+          { type: 'output', content: '|  2  Showa Track               Oct25-Feb26  Done  |' },
+          { type: 'output', content: '|  3  Showa Store Mgmt          Feb-Apr 2026  Done |' },
+          { type: 'output', content: '|  4  VS Code Portfolio         2026         Done  |' },
+          { type: 'output', content: '|  5  Local Bazaar              Jun-Sep 2025  Arch |' },
+          { type: 'highlight', content: '+----------------------------------------------------+' },
           { type: 'dim', content: '  Type "cat <filename>" to view project details' },
         ];
         break;
@@ -333,11 +356,12 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
           { type: 'highlight', content: '-- Contact Info -----------------' },
           { type: 'output', content: '' },
           { type: 'info', content: '  Email:    mandeep.pc2006@gmail.com' },
+          { type: 'info', content: '  Phone:    +91 99204 80615' },
           { type: 'info', content: '  LinkedIn: linkedin.com/in/mandeepnagar' },
           { type: 'info', content: '  Website:  mandeepiitp.tech' },
           { type: 'output', content: '' },
           { type: 'info', content: '  Location: Patna, Bihar, India' },
-          { type: 'success', content: '  Status:   Open to opportunities' },
+          { type: 'success', content: '  Status:   Open to full-time roles, freelance & collaborations' },
         ];
         break;
 
@@ -345,17 +369,21 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         output = [
           { type: 'highlight', content: '-- Work Experience ----------------' },
           { type: 'output', content: '' },
-          { type: 'success', content: '  > CTO & Co-Founder' },
-          { type: 'output', content: '    Showa | 2024 -- Present' },
+          { type: 'success', content: '  > CTO' },
+          { type: 'output', content: '    Showa | Jul 2025 -- Jun 2026' },
+          { type: 'dim', content: '    Bihar, India' },
+          { type: 'output', content: '' },
+          { type: 'info', content: '  > Freelance Developer (Independent)' },
+          { type: 'output', content: '    Sep 2025 -- Present' },
           { type: 'dim', content: '    Remote' },
           { type: 'output', content: '' },
-          { type: 'info', content: '  > Freelance Backend Developer' },
-          { type: 'output', content: '    Quick Venu | 2024' },
+          { type: 'info', content: '  > Freelance Developer' },
+          { type: 'output', content: '    Quick Venue | Jun -- Aug 2026' },
           { type: 'dim', content: '    Remote' },
           { type: 'output', content: '' },
-          { type: 'warning', content: '  > Member, Student Technical Council' },
+          { type: 'warning', content: '  > Member, WebWiser -- STC' },
           { type: 'output', content: '    IIT Patna | Sep 2025 -- Present' },
-          { type: 'dim', content: '    Patna, Bihar, India' },
+          { type: 'dim', content: '    Bihar, India' },
           { type: 'output', content: '' },
           { type: 'dim', content: '  Type "cat <filename>" for details' },
         ];
@@ -403,17 +431,32 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
           { type: 'output', content: '|   +-- showa-track.ts' },
           { type: 'output', content: '|   +-- showa-store-management.ts' },
           { type: 'output', content: '|   +-- vscode-portfolio.tsx' },
+          { type: 'output', content: '|   +-- local-bazaar.ts' },
           { type: 'dim', content: '+-- experience/' },
           { type: 'output', content: '|   +-- cto-showa.ts' },
-          { type: 'output', content: '|   +-- freelance-quick-venu.ts' },
+          { type: 'output', content: '|   +-- freelance-independent.ts' },
+          { type: 'output', content: '|   +-- freelance-quick-venue.ts' },
           { type: 'output', content: '|   +-- stc-member.ts' },
           { type: 'dim', content: '+-- education/' },
           { type: 'output', content: '|   +-- iit-patna-bs.ts' },
           { type: 'output', content: '|   +-- senior-secondary.ts' },
+          { type: 'output', content: '|   +-- secondary.ts' },
           { type: 'dim', content: '+-- images/' },
+          { type: 'output', content: '|   +-- my.png' },
+          { type: 'output', content: '|   +-- logo.png' },
           { type: 'output', content: '|   +-- white_logo.png' },
+          { type: 'output', content: '|   +-- award.jpeg' },
+          { type: 'output', content: '|   +-- award2.jpeg' },
+          { type: 'output', content: '|   +-- hackNtech2.0.jpeg' },
+          { type: 'output', content: '|   +-- hackNtech3.0.jpeg' },
+          { type: 'output', content: '|   +-- pixel_pulse_certificate.jpeg' },
+          { type: 'output', content: '|   +-- tech_crew.jpeg' },
+          { type: 'output', content: '|   +-- tech_team.jpeg' },
+          { type: 'dim', content: '+-- files/' },
+          { type: 'output', content: '|   +-- mandeep_resume.pdf' },
           { type: 'output', content: '+-- index.ts' },
           { type: 'output', content: '+-- skills.ts' },
+          { type: 'output', content: '+-- achievements.ts' },
           { type: 'output', content: '+-- contact.ts' },
           { type: 'info', content: '+-- README.md' },
         ];

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import {
   Copy, CheckSquare, WrapText, Hash, Eye, Sparkles,
   Terminal, Sidebar as SidebarIcon, Download, Sun, Moon,
@@ -90,15 +90,10 @@ export default function ContextMenu() {
         type = 'editor';
       }
 
-      const menuWidth = 220;
-      const menuHeight = 280;
-      const x = Math.min(e.clientX, window.innerWidth - menuWidth - 12);
-      const y = Math.min(e.clientY, window.innerHeight - menuHeight - 12);
-
       setMenu({
         isOpen: true,
-        x: Math.max(12, x),
-        y: Math.max(12, y),
+        x: e.clientX,
+        y: e.clientY,
         type,
         targetId,
       });
@@ -131,6 +126,21 @@ export default function ContextMenu() {
       window.removeEventListener('scroll', handleScroll, true);
     };
   }, []);
+
+  useLayoutEffect(() => {
+    if (!menu.isOpen || !menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    const pad = 12;
+    let x = menu.x;
+    let y = menu.y;
+    if (x + rect.width + pad > window.innerWidth) x = window.innerWidth - rect.width - pad;
+    if (y + rect.height + pad > window.innerHeight) y = window.innerHeight - rect.height - pad;
+    x = Math.max(pad, x);
+    y = Math.max(pad, y);
+    if (x !== menu.x || y !== menu.y) {
+      setMenu((s) => ({ ...s, x, y }));
+    }
+  }, [menu.isOpen, menu.x, menu.y]);
 
   if (!menu.isOpen) return null;
 
@@ -168,8 +178,30 @@ export default function ContextMenu() {
     setMenu((s) => ({ ...s, isOpen: false }));
   };
 
-  const handleDownloadFile = () => {
-    if (targetFile && targetFile.content) {
+  const handleDownloadFile = async () => {
+    if (!targetFile) {
+      setMenu((s) => ({ ...s, isOpen: false }));
+      return;
+    }
+    const isBinary = targetFile.language === 'binary' || targetFile.language === 'pdf';
+    if (isBinary) {
+      const isPdf = targetFile.language === 'pdf';
+      const publicPath = isPdf ? `/files/${targetFile.name}` : `/images/${targetFile.name}`;
+      try {
+        const res = await fetch(publicPath);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = targetFile.name;
+        a.click();
+        URL.revokeObjectURL(url);
+        playToastSound();
+        showToast(`Downloaded ${targetFile.name}`);
+      } catch {
+        showToast(`Could not download ${targetFile.name}`);
+      }
+    } else if (targetFile.content) {
       const blob = new Blob([targetFile.content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -186,11 +218,10 @@ export default function ContextMenu() {
   return (
     <div
       ref={menuRef}
-      className={`fixed z-50 min-w-[210px] rounded-lg shadow-2xl py-1 text-[12px] font-sans border backdrop-blur-md animate-scaleIn select-none ${
-        isLight
-          ? 'bg-white/95 border-[#d0d0d0] text-[#24292f] shadow-black/15'
-          : 'bg-[#252526]/95 border-[#454545] text-[#cccccc] shadow-black/60'
-      }`}
+      className={`fixed z-50 min-w-[210px] rounded-lg shadow-2xl py-1 text-[12px] font-sans border backdrop-blur-md animate-scaleIn select-none ${isLight
+        ? 'bg-white/95 border-[#d0d0d0] text-[#24292f] shadow-black/15'
+        : 'bg-[#252526]/95 border-[#454545] text-[#cccccc] shadow-black/60'
+        }`}
       style={{ left: `${menu.x}px`, top: `${menu.y}px` }}
     >
       {menu.type === 'tab' && menu.targetId && (
@@ -201,14 +232,13 @@ export default function ContextMenu() {
               closeTab(menu.targetId!);
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <X className="w-3.5 h-3.5 opacity-80" /> Close
             </span>
-            <span className="text-[10px] opacity-60 font-mono">⌘W</span>
+            {/* <span className="text-[10px] opacity-60 font-mono">⌘W</span> */}
           </button>
 
           {openTabs.length > 1 && (
@@ -219,9 +249,8 @@ export default function ContextMenu() {
                   closeOtherTabs(menu.targetId!);
                   setMenu((s) => ({ ...s, isOpen: false }));
                 }}
-                className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-                  isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-                }`}
+                className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+                  }`}
               >
                 <span className="flex items-center gap-2">
                   <Layers className="w-3.5 h-3.5 opacity-80" /> Close Others
@@ -234,9 +263,8 @@ export default function ContextMenu() {
                   closeAllTabs();
                   setMenu((s) => ({ ...s, isOpen: false }));
                 }}
-                className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-                  isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-                }`}
+                className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+                  }`}
               >
                 <span className="flex items-center gap-2">
                   <X className="w-3.5 h-3.5 opacity-80" /> Close All
@@ -251,9 +279,8 @@ export default function ContextMenu() {
             <button
               type="button"
               onClick={handleDownloadFile}
-              className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-                isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-              }`}
+              className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+                }`}
             >
               <span className="flex items-center gap-2">
                 <Download className="w-3.5 h-3.5 opacity-80" /> Download File
@@ -261,7 +288,7 @@ export default function ContextMenu() {
             </button>
           )}
 
-          <button
+          {/* <button
             type="button"
             onClick={handleAskAI}
             className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
@@ -271,7 +298,7 @@ export default function ContextMenu() {
             <span className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Ask AI About File
             </span>
-          </button>
+          </button> */}
         </>
       )}
 
@@ -283,9 +310,8 @@ export default function ContextMenu() {
               if (targetFile) openFile(targetFile);
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Code className="w-3.5 h-3.5 opacity-80" /> Open in Editor
@@ -295,9 +321,8 @@ export default function ContextMenu() {
           <button
             type="button"
             onClick={handleDownloadFile}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Download className="w-3.5 h-3.5 opacity-80" /> Download File
@@ -306,7 +331,7 @@ export default function ContextMenu() {
 
           <div className={`my-1 border-t ${isLight ? 'border-[#e8e8e8]' : 'border-[#3c3c3c]'}`} />
 
-          <button
+          {/* <button
             type="button"
             onClick={handleAskAI}
             className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
@@ -316,7 +341,7 @@ export default function ContextMenu() {
             <span className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Ask AI About File
             </span>
-          </button>
+          </button> */}
         </>
       )}
 
@@ -328,9 +353,8 @@ export default function ContextMenu() {
               toggleFolder(menu.targetId!);
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <FolderOpen className="w-3.5 h-3.5 opacity-80" /> Toggle Folder
@@ -340,9 +364,8 @@ export default function ContextMenu() {
           <button
             type="button"
             onClick={handleAskAI}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Explain Architecture
@@ -356,9 +379,8 @@ export default function ContextMenu() {
           <button
             type="button"
             onClick={handleCopyCode}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Copy className="w-3.5 h-3.5 opacity-80" /> Copy
@@ -369,9 +391,8 @@ export default function ContextMenu() {
           <button
             type="button"
             onClick={handleSelectAll}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <CheckSquare className="w-3.5 h-3.5 opacity-80" /> Select All
@@ -387,9 +408,8 @@ export default function ContextMenu() {
               toggleWordWrap();
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <WrapText className="w-3.5 h-3.5 opacity-80" /> Word Wrap: {wordWrap ? 'On' : 'Off'}
@@ -403,9 +423,8 @@ export default function ContextMenu() {
               toggleLineNumbers();
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Hash className="w-3.5 h-3.5 opacity-80" /> Line Numbers: {showLineNumbers ? 'On' : 'Off'}
@@ -419,9 +438,8 @@ export default function ContextMenu() {
                 toggleMdPreview();
                 setMenu((s) => ({ ...s, isOpen: false }));
               }}
-              className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-                isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-              }`}
+              className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+                }`}
             >
               <span className="flex items-center gap-2">
                 <Eye className="w-3.5 h-3.5 opacity-80" /> {mdPreviewMode ? 'Show Source' : 'Open Preview'}
@@ -435,9 +453,8 @@ export default function ContextMenu() {
           <button
             type="button"
             onClick={handleAskAI}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Ask AI About Code
@@ -449,9 +466,8 @@ export default function ContextMenu() {
             <button
               type="button"
               onClick={handleDownloadFile}
-              className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-                isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-              }`}
+              className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+                }`}
             >
               <span className="flex items-center gap-2">
                 <Download className="w-3.5 h-3.5 opacity-80" /> Download File
@@ -465,13 +481,26 @@ export default function ContextMenu() {
         <>
           <button
             type="button"
+            onClick={handleCopyCode}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
+          >
+            <span className="flex items-center gap-2">
+              <Copy className="w-3.5 h-3.5 opacity-80" /> Copy
+            </span>
+            <span className="text-[10px] opacity-60 font-mono">⌘C</span>
+          </button>
+
+          <div className={`my-1 border-t ${isLight ? 'border-[#e8e8e8]' : 'border-[#3c3c3c]'}`} />
+
+          <button
+            type="button"
             onClick={() => {
               clearTerminal();
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Terminal className="w-3.5 h-3.5 opacity-80" /> Clear Terminal
@@ -485,9 +514,8 @@ export default function ContextMenu() {
               toggleTerminal();
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <X className="w-3.5 h-3.5 opacity-80" /> Hide Terminal
@@ -505,9 +533,8 @@ export default function ContextMenu() {
               toggleTerminal();
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Terminal className="w-3.5 h-3.5 opacity-80" /> Toggle Terminal
@@ -521,9 +548,8 @@ export default function ContextMenu() {
               toggleSidebar();
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <SidebarIcon className="w-3.5 h-3.5 opacity-80" /> Toggle Primary Bar
@@ -540,9 +566,8 @@ export default function ContextMenu() {
               setTheme(theme === 'dark' ? 'light' : 'dark');
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-500" />}
@@ -553,9 +578,8 @@ export default function ContextMenu() {
           <button
             type="button"
             onClick={handleAskAI}
-            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Ask AI Assistant

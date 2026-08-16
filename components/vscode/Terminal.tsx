@@ -33,23 +33,38 @@ const BASE_COMMANDS = [
   'echo',
 ];
 
-const FOLDER_NAMES = ['projects', 'experience', 'education', 'images', 'src', '~', '..'];
+const FOLDER_NAMES = ['projects', 'experience', 'education', 'images', 'files', 'src', '~', '..'];
 
 const FILE_NAMES = [
   'index.ts',
   'skills.ts',
+  'achievements.ts',
   'contact.ts',
   'README.md',
   'adjmd.tsx',
   'showa-track.ts',
   'showa-store-management.ts',
   'vscode-portfolio.tsx',
+  'local-bazaar.ts',
   'cto-showa.ts',
-  'freelance-quick-venu.ts',
+  'freelance-independent.ts',
+  'freelance-quick-venue.ts',
   'stc-member.ts',
   'iit-patna-bs.ts',
   'senior-secondary.ts',
+  'secondary.ts',
   'white_logo.png',
+  'award.jpeg',
+  'award2.jpeg',
+  'hackNtech2.0.jpeg',
+  'hackNtech2.0_poster.png',
+  'hackNtech3.0.jpeg',
+  'idea_station_poster.png',
+  'pixel_pulse_certificate.jpeg',
+  'pixel_pulse_poster.png',
+  'tech_crew.jpeg',
+  'tech_team.jpeg',
+  'mandeep_resume.pdf',
 ];
 
 function getContextualSuggestions(input: string): string[] {
@@ -291,8 +306,8 @@ export default function Terminal() {
           ))}
           <span
             className={`flex items-center px-2.5 py-0.5 text-[11px] md:text-[12px] whitespace-nowrap h-[35px] font-medium border-t-[2px] ${isLight
-                ? 'bg-white border-t-[#007acc] text-[#111111]'
-                : 'bg-[#1e1e1e] border-t-[#007fd4] text-[#cccccc]'
+              ? 'bg-white border-t-[#007acc] text-[#111111]'
+              : 'bg-[#1e1e1e] border-t-[#007fd4] text-[#cccccc]'
               }`}
           >
             TERMINAL
@@ -350,12 +365,16 @@ export default function Terminal() {
 
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-2 font-mono text-[12px] md:text-[13px] leading-[20px] min-h-0"
-        style={{ scrollbarWidth: 'thin' }}
-        onClick={() => inputRef.current?.focus()}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-4 py-2 font-mono text-[12px] md:text-[13px] leading-[20px] min-h-0 select-text"
+        style={{ scrollbarWidth: 'thin', userSelect: 'text' }}
+        onClick={() => {
+          const selection = window.getSelection()?.toString();
+          if (selection && selection.length > 0) return;
+          inputRef.current?.focus();
+        }}
       >
         {terminalHistory.map((line, i) => (
-          <div key={i} className="min-h-[20px]">
+          <div key={i} className="min-h-[20px] select-text">
             {line.type === 'input' ? (
               <span>
                 <span className={isLight ? 'text-[#008000] font-semibold' : 'text-[#6a9955]'}>

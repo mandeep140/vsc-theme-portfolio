@@ -61,9 +61,8 @@ export default function IntroLoading({ onComplete }: { onComplete?: () => void }
   return (
     <div
       onClick={dismiss}
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0e0e10] text-[#cccccc] font-mono cursor-pointer transition-opacity duration-350 select-none ${
-        fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0e0e10] text-[#cccccc] font-mono cursor-pointer transition-opacity duration-350 select-none ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
     >
       <div className="w-[90%] max-w-[460px] p-6 rounded-lg border border-[#2d2d30] bg-[#141416]/90 shadow-2xl backdrop-blur-md">
         <div className="flex items-center gap-1.5 mb-5 pb-3 border-b border-[#252528]">
@@ -77,9 +76,8 @@ export default function IntroLoading({ onComplete }: { onComplete?: () => void }
           {BOOT_STEPS.slice(0, currentStep + 1).map((step, idx) => (
             <div
               key={idx}
-              className={`flex items-center gap-2 ${
-                idx === currentStep ? 'text-white' : 'text-[#858585]'
-              }`}
+              className={`flex items-center gap-2 ${idx === currentStep ? 'text-white' : 'text-[#858585]'
+                }`}
             >
               <span className="text-[#007acc] font-bold">&gt;</span>
               <span className="truncate">{step}</span>

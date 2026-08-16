@@ -96,9 +96,8 @@ export default function FeedbackPanel() {
   return (
     <div className="flex flex-col h-full min-h-0 select-none">
       <div
-        className={`flex items-center justify-between px-4 py-2 border-b flex-shrink-0 ${
-          isLight ? 'border-[#e4e4e4] bg-[#fafafa]' : 'border-[#3c3c3c] bg-[#1e1e1e]'
-        }`}
+        className={`flex items-center justify-between px-4 py-2 border-b flex-shrink-0 ${isLight ? 'border-[#e4e4e4] bg-[#fafafa]' : 'border-[#3c3c3c] bg-[#1e1e1e]'
+          }`}
       >
         <div className="flex items-center gap-2">
           <MessageSquareQuote className={`w-4 h-4 ${isLight ? 'text-[#007acc]' : 'text-[#007fd4]'}`} />
@@ -111,9 +110,8 @@ export default function FeedbackPanel() {
             type="button"
             onClick={() => fetchFeedbacks(true)}
             disabled={refreshing}
-            className={`p-1 rounded transition-colors cursor-pointer ${
-              isLight ? 'hover:bg-[#e0e0e0] text-[#555555]' : 'hover:bg-[#333333] text-[#aaaaaa]'
-            }`}
+            className={`p-1 rounded transition-colors cursor-pointer ${isLight ? 'hover:bg-[#e0e0e0] text-[#555555]' : 'hover:bg-[#333333] text-[#aaaaaa]'
+              }`}
             title="Refresh Reviews"
             aria-label="Refresh Reviews"
           >
@@ -125,13 +123,12 @@ export default function FeedbackPanel() {
               playClickSound();
               setIsFormOpen(!isFormOpen);
             }}
-            className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${
-              isFormOpen
+            className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-colors cursor-pointer ${isFormOpen
                 ? isLight
                   ? 'bg-[#e0e0e0] text-[#111111]'
                   : 'bg-[#3c3c3c] text-white'
                 : 'bg-[#007acc] text-white hover:bg-[#0060c0]'
-            }`}
+              }`}
           >
             <Plus className={`w-3 h-3 transition-transform ${isFormOpen ? 'rotate-45' : ''}`} />
             <span>{isFormOpen ? 'Close' : 'Add Review'}</span>
@@ -143,16 +140,12 @@ export default function FeedbackPanel() {
         {isFormOpen && (
           <form
             onSubmit={handleSubmit}
-            className={`p-3 rounded-lg border shadow-sm animate-scaleIn ${
-              isLight ? 'bg-white border-[#d0d0d0]' : 'bg-[#252526] border-[#3c3c3c]'
-            }`}
+            className={`p-3 rounded-lg border shadow-sm animate-scaleIn ${isLight ? 'bg-white border-[#d0d0d0]' : 'bg-[#252526] border-[#3c3c3c]'
+              }`}
           >
             <div className="flex items-center justify-between mb-2">
               <span className={`text-[12px] font-semibold ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>
                 Write Feedback
-              </span>
-              <span className={`text-[10px] ${isLight ? 'text-[#888888]' : 'text-[#777777]'}`}>
-                Saved to Redis
               </span>
             </div>
 
@@ -165,11 +158,10 @@ export default function FeedbackPanel() {
                   placeholder="Your Name / Organization"
                   maxLength={60}
                   required
-                  className={`w-full px-2.5 py-1.5 rounded border text-[12px] outline-none font-sans transition-colors ${
-                    isLight
+                  className={`w-full px-2.5 py-1.5 rounded border text-[12px] outline-none font-sans transition-colors ${isLight
                       ? 'bg-[#fbfbfb] border-[#cecece] text-[#24292f] placeholder:text-[#999999] focus:border-[#007acc] focus:bg-white'
                       : 'bg-[#1e1e1e] border-[#3c3c3c] text-[#cccccc] placeholder:text-[#6a6a6a] focus:border-[#007fd4] focus:bg-[#1f1f22]'
-                  }`}
+                    }`}
                 />
               </div>
 
@@ -181,11 +173,10 @@ export default function FeedbackPanel() {
                   rows={3}
                   maxLength={1000}
                   required
-                  className={`w-full px-2.5 py-1.5 rounded border text-[12px] outline-none font-sans resize-none transition-colors ${
-                    isLight
+                  className={`w-full px-2.5 py-1.5 rounded border text-[12px] outline-none font-sans resize-none transition-colors ${isLight
                       ? 'bg-[#fbfbfb] border-[#cecece] text-[#24292f] placeholder:text-[#999999] focus:border-[#007acc] focus:bg-white'
                       : 'bg-[#1e1e1e] border-[#3c3c3c] text-[#cccccc] placeholder:text-[#6a6a6a] focus:border-[#007fd4] focus:bg-[#1f1f22]'
-                  }`}
+                    }`}
                 />
               </div>
 
@@ -193,22 +184,20 @@ export default function FeedbackPanel() {
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className={`px-2.5 py-1 rounded text-[11px] transition-colors cursor-pointer ${
-                    isLight ? 'text-[#666666] hover:bg-[#eaeaea]' : 'text-[#888888] hover:bg-[#333333]'
-                  }`}
+                  className={`px-2.5 py-1 rounded text-[11px] transition-colors cursor-pointer ${isLight ? 'text-[#666666] hover:bg-[#eaeaea]' : 'text-[#888888] hover:bg-[#333333]'
+                    }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting || !name.trim() || !content.trim()}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${
-                    submitting || !name.trim() || !content.trim()
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-medium transition-all cursor-pointer ${submitting || !name.trim() || !content.trim()
                       ? isLight
                         ? 'bg-[#e0e0e0] text-[#999999] cursor-not-allowed'
                         : 'bg-[#333333] text-[#666666] cursor-not-allowed'
                       : 'bg-[#007acc] text-white hover:bg-[#0060c0] shadow-xs'
-                  }`}
+                    }`}
                 >
                   <Send className="w-3 h-3" />
                   <span>{submitting ? 'Submitting...' : 'Post Review'}</span>
@@ -223,9 +212,8 @@ export default function FeedbackPanel() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className={`p-3 rounded-lg border animate-pulse ${
-                  isLight ? 'bg-[#f0f0f0] border-[#e0e0e0]' : 'bg-[#252526] border-[#333333]'
-                }`}
+                className={`p-3 rounded-lg border animate-pulse ${isLight ? 'bg-[#f0f0f0] border-[#e0e0e0]' : 'bg-[#252526] border-[#333333]'
+                  }`}
               >
                 <div className="h-4 bg-black/10 rounded w-1/3 mb-2" />
                 <div className="h-3 bg-black/10 rounded w-full mb-1" />
@@ -254,18 +242,16 @@ export default function FeedbackPanel() {
           feedbacks.map((item) => (
             <div
               key={item.id}
-              className={`p-3 rounded-lg border transition-all select-text ${
-                isLight
+              className={`p-3 rounded-lg border transition-all select-text ${isLight
                   ? 'bg-white border-[#e0e0e0] hover:border-[#007acc]/40 shadow-xs'
                   : 'bg-[#252526]/80 border-[#333333] hover:border-[#007fd4]/40 shadow-sm'
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2 min-w-0">
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                      isLight ? 'bg-[#007acc]/10 text-[#007acc]' : 'bg-[#007fd4]/20 text-[#007fd4]'
-                    }`}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${isLight ? 'bg-[#007acc]/10 text-[#007acc]' : 'bg-[#007fd4]/20 text-[#007fd4]'
+                      }`}
                   >
                     {getInitials(item.name)}
                   </div>

@@ -33,7 +33,7 @@ export default function FeatureHighlighter() {
     () => [
       {
         targetKey: 'welcome-stats',
-        title: 'Total Views & Interactive Likes',
+        title: 'Total Views, Interactive Likes and feedbacks',
         description:
           'Live visitor analytics backed by Upstash Redis. View real-time visits and click the heart button to leave a like.',
       },
@@ -59,7 +59,7 @@ export default function FeatureHighlighter() {
         targetKey: 'profile-btn',
         title: 'Developer Profile',
         description:
-          'Mandeep Nagar is a full-stack developer with 5+ years of experience in building web applications.',
+          'Mandeep Nagar is a full-stack developer with 1+ year of experience in building web applications.',
       },
       {
         targetKey: 'terminal-btn',

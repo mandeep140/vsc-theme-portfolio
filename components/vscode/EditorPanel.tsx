@@ -294,12 +294,48 @@ function MarkdownPreview({ content }: { content: string }) {
 function ImagePreview({ file }: { file: { name: string; id: string } }) {
   const { theme } = usePortfolioStore();
   const isLight = theme === 'light';
+
+  const isPdf = file.name.endsWith('.pdf');
   const isImageFile =
     file.name.endsWith('.png') ||
     file.name.endsWith('.jpg') ||
     file.name.endsWith('.jpeg') ||
     file.name.endsWith('.gif') ||
     file.name.endsWith('.webp');
+
+  const filePath = isPdf ? `/files/${file.name}` : `/images/${file.name}`;
+
+  if (isPdf) {
+    return (
+      <div
+        className={`flex-1 min-h-0 overflow-hidden flex flex-col ${isLight ? 'bg-[#f8f8f8]' : 'bg-[#1e1e1e]'}`}
+      >
+        <div className={`flex items-center gap-3 px-4 py-2 border-b flex-shrink-0 ${isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'}`}>
+          <span className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>{file.name}</span>
+          <a
+            href={filePath}
+            download={file.name}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-medium bg-[#007acc] text-white hover:bg-[#005f9e] transition-colors cursor-pointer"
+          >
+            Download Resume
+          </a>
+          <a
+            href={filePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-medium border transition-colors cursor-pointer ${isLight ? 'border-[#d0d0d0] text-[#333333] hover:border-[#007acc] hover:text-[#007acc]' : 'border-[#3c3c3c] text-[#cccccc] hover:border-[#007fd4] hover:text-white'}`}
+          >
+            Open in new tab
+          </a>
+        </div>
+        <embed
+          src={filePath}
+          type="application/pdf"
+          className="flex-1 w-full min-h-0"
+        />
+      </div>
+    );
+  }
 
   if (isImageFile) {
     return (
@@ -308,7 +344,7 @@ function ImagePreview({ file }: { file: { name: string; id: string } }) {
           }`}
       >
         <img
-          src={`/images/${file.name}`}
+          src={filePath}
           alt={file.name}
           className="max-w-full max-h-full object-contain rounded shadow-sm"
         />
@@ -328,7 +364,7 @@ function ImagePreview({ file }: { file: { name: string; id: string } }) {
             : 'bg-[#2d2d30] border-[#3c3c3c] text-white'
             }`}
         >
-          <span className="text-3xl font-bold opacity-80">IMG</span>
+          <span className="text-3xl font-bold opacity-80">FILE</span>
         </div>
         <div>
           <p className={`text-sm font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>{file.name}</p>
@@ -427,7 +463,7 @@ function EmptyEditor() {
             Mandeep Nagar
           </h1>
           <p className={`text-xs md:text-sm font-medium mb-3 ${isLight ? 'text-[#555555]' : 'text-[#969696]'}`}>
-            Full Stack Software Engineer & CTO
+            Full Stack Web Developer
           </p>
 
           <div className="flex justify-center">
@@ -550,7 +586,7 @@ function EmptyEditor() {
             Featured Source Files
           </div>
           <div className="flex items-center justify-center gap-2 flex-wrap text-xs">
-            {['index.ts', 'skills.ts', 'experience.ts', 'contact.ts'].map((fileName) => (
+            {['index.ts', 'skills.ts', 'contact.ts'].map((fileName) => (
               <button
                 key={fileName}
                 type="button"
@@ -580,7 +616,7 @@ export default function EditorPanel() {
   const file = activeTabId ? findFileById(fileTree, activeTabId) : null;
 
   const isMarkdown = file?.language === 'markdown' && file.content;
-  const isBinary = file?.language === 'binary';
+  const isBinary = file?.language === 'binary' || file?.language === 'pdf';
   const showPreview = isMarkdown && mdPreviewMode;
 
   const handleDrop = (e: React.DragEvent) => {
