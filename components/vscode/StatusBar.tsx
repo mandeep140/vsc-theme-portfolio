@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePortfolioStore } from '@/store/portfolio-store';
-import { GitBranch, CheckCircle2, AlertCircle, TriangleAlert, Bell, Volume2, VolumeX } from 'lucide-react';
+import { GitBranch, CheckCircle2, AlertCircle, TriangleAlert, Bell, Volume2, VolumeX, Play } from 'lucide-react';
 
 function useClock() {
   const [time, setTime] = useState('');
@@ -81,6 +81,18 @@ export default function StatusBar() {
       </div>
 
       <div className="ml-auto flex items-center gap-0.5">
+        <button
+          onClick={() => {
+            if (!usePortfolioStore.getState().terminalVisible) toggleTerminal();
+            usePortfolioStore.getState().executeCommand('npm run dev');
+            if (typeof window !== 'undefined') window.open('/ui', '_blank');
+          }}
+          className="flex items-center gap-1 bg-[#1f8ad2] hover:bg-[#186da7] px-2 py-0.5 rounded-sm transition-colors font-medium text-[11px] mr-1 shadow-sm"
+          title="Run npm run dev and launch Web UI (/ui)"
+        >
+          <Play className="w-2.5 h-2.5 fill-current" />
+          <span>Web UI</span>
+        </button>
         <button
           onClick={toggleTerminal}
           className="hover:bg-[#1f8ad2] px-1.5 py-0.5 rounded-sm transition-colors"

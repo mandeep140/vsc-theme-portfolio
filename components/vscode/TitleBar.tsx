@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { findFileById, fileTree } from '@/data/portfolio-data';
+import { Play, ExternalLink } from 'lucide-react';
 
 type MenuItemBase = {
   label: string;
@@ -352,17 +353,25 @@ export default function TitleBar() {
     ],
     Run: [
       {
-        label: 'Start Debugging',
-        shortcut: 'F5',
-        action: () => showToast('Debugger initialized: Zero errors detected. All systems operational.'),
-      },
-      {
-        label: 'Run Without Debugging',
+        label: 'Start (Web UI Portfolio)',
         shortcut: 'Ctrl+F5',
         action: () => {
           if (!usePortfolioStore.getState().terminalVisible) toggleTerminal();
           executeCommand('npm run dev');
+          if (typeof window !== 'undefined') window.open('/ui', '_blank');
         },
+      },
+      {
+        label: 'Run "npm run dev"',
+        shortcut: 'F5',
+        action: () => {
+          if (!usePortfolioStore.getState().terminalVisible) toggleTerminal();
+          executeCommand('npm run dev');
+        },
+      },
+      {
+        label: 'Start Debugging',
+        action: () => showToast('Debugger initialized: Zero errors detected. All systems operational.'),
       },
       {
         label: 'Stop Debugging',
@@ -442,7 +451,7 @@ export default function TitleBar() {
       },
       {
         label: 'About VS Code Portfolio',
-        action: () => showToast('VS Code Portfolio v1.1.0 — Built by Mandeep Nagar'),
+        action: () => showToast('VS Code Portfolio v2.0.0 — Built by Mandeep Nagar'),
       },
     ],
   };
@@ -515,7 +524,7 @@ export default function TitleBar() {
     },
     {
       label: 'About Portfolio',
-      action: () => showToast('VS Code Portfolio v1.1.0 — Built by Mandeep Nagar'),
+      action: () => showToast('VS Code Portfolio v2.0.0 — Built by Mandeep Nagar'),
     },
   ];
 
@@ -591,7 +600,26 @@ export default function TitleBar() {
         {displayName}Mandeep Nagar — Portfolio — Visual Studio Code
       </div>
 
-      <div className="w-2 flex-shrink-0" />
+      <div className="flex items-center gap-1.5 px-2 flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => {
+            if (!usePortfolioStore.getState().terminalVisible) toggleTerminal();
+            executeCommand('npm run dev');
+            showToast('Launching User-friendly UI at /ui');
+            if (typeof window !== 'undefined') {
+              window.open('/ui', '_blank');
+            }
+          }}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#007acc] hover:bg-[#0060a0] text-white text-[11px] md:text-[12px] font-medium transition-all shadow-sm active:scale-95 cursor-pointer"
+          title="Run npm run dev and open user-friendly portfolio at /ui"
+        >
+          <Play className="w-3 h-3 fill-current" />
+          <span className="font-semibold tracking-wide">Start (Web UI)</span>
+        </button>
+      </div>
+
+      <div className="w-1 flex-shrink-0" />
 
       {openMenu && (
         <div

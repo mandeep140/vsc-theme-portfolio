@@ -8,6 +8,8 @@ import { playKeypressSound, playSuccessSound, playClickSound } from '@/lib/sound
 const BASE_COMMANDS = [
   'help',
   'npm run dev',
+  'ui',
+  'start',
   'git log',
   'git status',
   'sudo hire me',
@@ -32,6 +34,43 @@ const BASE_COMMANDS = [
   'cd',
   'echo',
 ];
+
+function renderTerminalText(content: string) {
+  const urlRegex = /(https?:\/\/[^\s]+|\/ui)/g;
+  const parts = content.split(urlRegex);
+  if (parts.length === 1) return content;
+
+  return parts.map((part, index) => {
+    if (part === '/ui') {
+      return (
+        <a
+          key={index}
+          href="/ui"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-[#38bdf8] hover:text-white font-semibold cursor-pointer"
+        >
+          {part}
+        </a>
+      );
+    }
+    if (part.match(/^https?:\/\//)) {
+      const targetHref = part.includes('localhost') ? '/ui' : (part.includes('mandeepiitp.tech/ui') ? '/ui' : part);
+      return (
+        <a
+          key={index}
+          href={targetHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-[#38bdf8] hover:text-white font-semibold cursor-pointer"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
 
 const FOLDER_NAMES = ['projects', 'experience', 'education', 'images', 'files', 'src', '~', '..'];
 
@@ -385,26 +424,26 @@ export default function Terminal() {
                 </span>
               </span>
             ) : line.type === 'error' ? (
-              <span className="text-[#e51400] font-medium">{line.content}</span>
+              <span className="text-[#e51400] font-medium">{renderTerminalText(line.content)}</span>
             ) : line.type === 'command' ? (
-              <span className={isLight ? 'text-[#795e26]' : 'text-[#dcdcaa]'}>{line.content}</span>
+              <span className={isLight ? 'text-[#795e26]' : 'text-[#dcdcaa]'}>{renderTerminalText(line.content)}</span>
             ) : line.type === 'success' ? (
               <span className={isLight ? 'text-[#098658] font-medium' : 'text-[#4ec9b0]'}>
-                {line.content}
+                {renderTerminalText(line.content)}
               </span>
             ) : line.type === 'info' ? (
-              <span className={isLight ? 'text-[#005fb8]' : 'text-[#3794ff]'}>{line.content}</span>
+              <span className={isLight ? 'text-[#005fb8]' : 'text-[#3794ff]'}>{renderTerminalText(line.content)}</span>
             ) : line.type === 'warning' ? (
-              <span className={isLight ? 'text-[#b07d00]' : 'text-[#cca700]'}>{line.content}</span>
+              <span className={isLight ? 'text-[#b07d00]' : 'text-[#cca700]'}>{renderTerminalText(line.content)}</span>
             ) : line.type === 'dim' ? (
-              <span className={isLight ? 'text-[#888888]' : 'text-[#6a6a6a]'}>{line.content}</span>
+              <span className={isLight ? 'text-[#888888]' : 'text-[#6a6a6a]'}>{renderTerminalText(line.content)}</span>
             ) : line.type === 'highlight' ? (
               <span className={isLight ? 'text-[#005fb8] font-bold' : 'text-[#dcdcaa] font-semibold'}>
-                {line.content}
+                {renderTerminalText(line.content)}
               </span>
             ) : (
-              <span className={isLight ? 'text-[#24292f] whitespace-pre' : 'text-[#cccccc] whitespace-pre'}>
-                {line.content}
+              <span className={isLight ? 'text-[#24292f] whitespace-pre-wrap' : 'text-[#cccccc] whitespace-pre-wrap'}>
+                {renderTerminalText(line.content)}
               </span>
             )}
           </div>
