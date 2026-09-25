@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { X, Eye, Code, Sparkles, FolderKanban, Terminal as TerminalIcon, Mail, Sliders, Settings, FileCode } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  X, Eye, Code, Sparkles, FolderKanban, Terminal as TerminalIcon,
+  Mail, Sliders, Settings, FileCode, ChevronLeft, ChevronRight
+} from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import {
   vscDarkPlus, vs,
@@ -22,50 +25,224 @@ import WelcomeStats from './WelcomeStats';
 import { playClickSound } from '@/lib/sound';
 
 function EditorTabs() {
-  const { openTabs, activeTabId, setActiveTab, closeTab, isMobile, theme } = usePortfolioStore();
-  const isLight = theme === 'light';
+  const {
+    openTabs,
+    activeTabId,
+    setActiveTab,
+    closeTab,
+    reorderTabs,
+    isMobile,
+    theme,
+    colorTheme,
+  } = usePortfolioStore();
+
+  const isLight =
+    theme === 'light' ||
+    colorTheme.includes('light') ||
+    colorTheme.endsWith('-latte') ||
+    colorTheme.endsWith('-dawn');
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Smooth pointer-based drag reordering (zero conflicts with editor text selection or click events)
+  const dragRef = useRef<{
+    startX: number;
+    startIndex: number;
+    tabId: string;
+    isDragging: boolean;
+  } | null>(null);
+
+  const [dragState, setDragState] = useState<{
+    fromIndex: number;
+    targetIndex: number;
+  } | null>(null);
+
+  // Auto-scroll active tab into view whenever activeTabId changes
+  useEffect(() => {
+    if (activeTabId && containerRef.current) {
+      const activeEl = containerRef.current.querySelector<HTMLElement>(`[data-tab-id="${activeTabId}"]`);
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [activeTabId]);
+
+  // Window listener to cleanly finish drag if cursor releases anywhere
+  useEffect(() => {
+    const handleGlobalPointerUp = () => {
+      if (dragRef.current?.isDragging && dragState) {
+        if (dragState.fromIndex !== dragState.targetIndex) {
+          reorderTabs(dragState.fromIndex, dragState.targetIndex);
+          playClickSound();
+        }
+      }
+      dragRef.current = null;
+      setDragState(null);
+    };
+
+    window.addEventListener('pointerup', handleGlobalPointerUp);
+    window.addEventListener('pointercancel', handleGlobalPointerUp);
+    return () => {
+      window.removeEventListener('pointerup', handleGlobalPointerUp);
+      window.removeEventListener('pointercancel', handleGlobalPointerUp);
+    };
+  }, [dragState, reorderTabs]);
+
+  // Horizontal mouse wheel scrolling for seamless browsing of many tabs
+  const handleWheel = (e: React.WheelEvent) => {
+    if (containerRef.current && e.deltaY !== 0) {
+      containerRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
+  const handlePointerDown = (index: number, tabId: string, e: React.PointerEvent) => {
+    if (e.button !== 0) return; // Only left mouse button
+    dragRef.current = {
+      startX: e.clientX,
+      startIndex: index,
+      tabId,
+      isDragging: false,
+    };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+
+    if (!dragRef.current.isDragging) {
+      if (Math.abs(dx) > 7) {
+        dragRef.current.isDragging = true;
+      } else {
+        return;
+      }
+    }
+
+    if (containerRef.current) {
+      const tabElements = Array.from(
+        containerRef.current.querySelectorAll<HTMLElement>('[data-tab-index]')
+      );
+      let targetIdx = dragRef.current.startIndex;
+      for (const el of tabElements) {
+        const rect = el.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right) {
+          targetIdx = parseInt(el.getAttribute('data-tab-index') || '0', 10);
+          break;
+        } else if (e.clientX > rect.right) {
+          targetIdx = parseInt(el.getAttribute('data-tab-index') || '0', 10);
+        }
+      }
+      setDragState({
+        fromIndex: dragRef.current.startIndex,
+        targetIndex: targetIdx,
+      });
+    }
+  };
+
+  const handlePointerUp = (index: number, tabId: string, e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const wasDragging = dragRef.current.isDragging;
+    dragRef.current = null;
+
+    if (wasDragging && dragState && dragState.fromIndex !== dragState.targetIndex) {
+      reorderTabs(dragState.fromIndex, dragState.targetIndex);
+      playClickSound();
+    } else if (!wasDragging) {
+      playClickSound();
+      setActiveTab(tabId);
+    }
+    setDragState(null);
+  };
 
   if (openTabs.length === 0) return null;
 
   return (
     <div
+      ref={containerRef}
       data-panel="tab-bar"
-      className={`flex items-center border-b overflow-x-auto flex-shrink-0 scrollbar-hide transition-colors duration-150 ${isLight
-        ? 'bg-[#f3f3f3] border-[#e4e4e4]'
-        : 'bg-[#252526] border-[#1e1e1e]'
-        }`}
+      onWheel={handleWheel}
+      onPointerMove={handlePointerMove}
+      className={`flex items-center border-b overflow-x-auto overflow-y-hidden flex-shrink-0 transition-colors duration-150 scroll-smooth select-none ${
+        isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'
+      }`}
+      style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+      }}
     >
-      {openTabs.map((tab) => {
+      {openTabs.map((tab, index) => {
         const isActive = tab.id === activeTabId;
+        const isBeingDragged = dragState?.fromIndex === index;
+        const isDropTarget = dragState?.targetIndex === index && dragState.fromIndex !== index;
+        const isTargetAfter = isDropTarget && dragState.fromIndex < index;
+        const isTargetBefore = isDropTarget && dragState.fromIndex > index;
+
         return (
           <div
             key={tab.id}
             data-tab-id={tab.id}
-            onClick={() => {
-              playClickSound();
-              setActiveTab(tab.id);
+            data-tab-index={index}
+            onPointerDown={(e) => handlePointerDown(index, tab.id, e)}
+            onPointerUp={(e) => handlePointerUp(index, tab.id, e)}
+            className={`group relative flex items-center gap-1.5 h-[35px] px-2 md:px-2.5 border-r cursor-pointer flex-shrink-0 transition-all duration-75 select-none ${
+              isBeingDragged
+                ? isLight
+                  ? 'opacity-40 bg-[#e0e0e0] shadow-inner'
+                  : 'opacity-40 bg-[#161616] shadow-inner'
+                : 'opacity-100'
+            } ${
+              isActive
+                ? isLight
+                  ? 'bg-white border-t-[2px] border-t-[#007acc] border-r-[#e4e4e4] text-[#111111] font-medium shadow-xs'
+                  : 'bg-[#1e1e1e] border-t-[2px] border-t-white border-r-[#252526] text-white font-medium'
+                : isLight
+                  ? 'bg-[#ececec] border-t-[2px] border-t-transparent border-r-[#e4e4e4] text-[#555555] hover:bg-[#e0e0e0]'
+                  : 'bg-[#2d2d2d] border-t-[2px] border-t-transparent border-r-[#252526] text-[#969696] hover:bg-[#2a2a2a]'
+            }`}
+            style={{
+              minWidth: isMobile ? '110px' : '140px',
+              maxWidth: isMobile ? '160px' : '220px',
             }}
-            className={`group flex items-center gap-1.5 h-[35px] px-2 md:px-3 border-r cursor-pointer min-w-0 transition-colors duration-100 ${isActive
-              ? isLight
-                ? 'bg-white border-t-[2px] border-t-[#007acc] border-r-[#e4e4e4] text-[#111111] font-medium shadow-xs'
-                : 'bg-[#1e1e1e] border-t-[2px] border-t-white border-r-[#252526] text-white font-medium'
-              : isLight
-                ? 'bg-[#ececec] border-t-[2px] border-t-transparent border-r-[#e4e4e4] text-[#555555] hover:bg-[#e0e0e0]'
-                : 'bg-[#2d2d2d] border-t-[2px] border-t-transparent border-r-[#252526] text-[#969696] hover:bg-[#2a2a2a]'
-              }`}
-            style={{ maxWidth: isMobile ? '130px' : '190px' }}
           >
-            <span
-              className={`text-[11px] font-bold flex-shrink-0 ${tab.language === 'tsx'
-                ? 'text-[#519aba]'
-                : tab.language === 'typescript'
-                  ? 'text-[#519aba]'
-                  : tab.language === 'markdown'
-                    ? 'text-[#519aba]'
-                    : tab.language === 'binary'
-                      ? 'text-[#a074c4]'
-                      : 'text-[#858585]'
+            {/* Live drop target insertion indicator */}
+            {isTargetBefore && (
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#007acc] z-30 pointer-events-none animate-pulse" />
+            )}
+            {isTargetAfter && (
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#007acc] z-30 pointer-events-none animate-pulse" />
+            )}
+
+            {/* Quick 1-click move left button on hover */}
+            {openTabs.length > 1 && index > 0 && (
+              <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playClickSound();
+                  reorderTabs(index, index - 1);
+                }}
+                className={`p-0.5 rounded opacity-0 group-hover:opacity-70 hover:opacity-100 transition-opacity cursor-pointer ${
+                  isLight ? 'hover:bg-[#d8d8d8] text-[#555]' : 'hover:bg-[#404040] text-[#aaa]'
                 }`}
+                title="Move tab left (Alt+Left)"
+                aria-label="Move tab left"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </button>
+            )}
+
+            <span
+              className={`text-[11px] font-bold flex-shrink-0 ${
+                tab.language === 'tsx'
+                  ? 'text-[#519aba]'
+                  : tab.language === 'typescript'
+                    ? 'text-[#519aba]'
+                    : tab.language === 'markdown'
+                      ? 'text-[#519aba]'
+                      : tab.language === 'binary'
+                        ? 'text-[#a074c4]'
+                        : 'text-[#858585]'
+              }`}
             >
               {tab.language === 'typescript'
                 ? 'TS'
@@ -77,22 +254,45 @@ function EditorTabs() {
                       ? 'PDF'
                       : 'JS'}
             </span>
-            <span className="truncate text-[12px] md:text-[13px]">{tab.name}</span>
+            <span className="truncate text-[12px] md:text-[13px] flex-1 pointer-events-none">{tab.name}</span>
+
+            {/* Quick 1-click move right button on hover */}
+            {openTabs.length > 1 && index < openTabs.length - 1 && (
+              <button
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playClickSound();
+                  reorderTabs(index, index + 1);
+                }}
+                className={`p-0.5 rounded opacity-0 group-hover:opacity-70 hover:opacity-100 transition-opacity cursor-pointer ${
+                  isLight ? 'hover:bg-[#d8d8d8] text-[#555]' : 'hover:bg-[#404040] text-[#aaa]'
+                }`}
+                title="Move tab right (Alt+Right)"
+                aria-label="Move tab right"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
+
             <button
               type="button"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 playClickSound();
                 closeTab(tab.id);
               }}
-              className={`p-0.5 rounded ml-1 transition-all ${isActive
-                ? isLight
-                  ? 'opacity-70 hover:opacity-100 hover:bg-[#e0e0e0]'
-                  : 'opacity-70 hover:opacity-100 hover:bg-[#404040]'
-                : isLight
-                  ? 'opacity-0 group-hover:opacity-100 hover:bg-[#dedede]'
-                  : 'opacity-0 group-hover:opacity-100 hover:bg-[#404040]'
-                }`}
+              className={`p-0.5 rounded ml-0.5 transition-all flex-shrink-0 cursor-pointer ${
+                isActive
+                  ? isLight
+                    ? 'opacity-70 hover:opacity-100 hover:bg-[#e0e0e0]'
+                    : 'opacity-70 hover:opacity-100 hover:bg-[#404040]'
+                  : isLight
+                    ? 'opacity-0 group-hover:opacity-100 hover:bg-[#dedede]'
+                    : 'opacity-0 group-hover:opacity-100 hover:bg-[#404040]'
+              }`}
               aria-label={`Close ${tab.name}`}
             >
               <X className="w-3.5 h-3.5" />

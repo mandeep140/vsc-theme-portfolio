@@ -647,10 +647,10 @@ function SettingsPanel() {
                       title={t.label}
                       onClick={() => { setColorTheme(t.id); showToast(`Theme: ${t.label}`); }}
                       className={`relative flex items-center gap-2 px-2 py-2 rounded border text-[11px] transition-all cursor-pointer group ${isActive
-                          ? 'border-[var(--accent-color,#007fd4)] ring-1 ring-[var(--accent-color,#007fd4)]/40 shadow-sm'
-                          : isLight
-                            ? 'border-[#d8d8d8] hover:border-[#bbb] bg-white'
-                            : 'border-[#3c3c3c] hover:border-[#555] bg-[#2d2d2d]/40'
+                        ? 'border-[var(--accent-color,#007fd4)] ring-1 ring-[var(--accent-color,#007fd4)]/40 shadow-sm'
+                        : isLight
+                          ? 'border-[#d8d8d8] hover:border-[#bbb] bg-white'
+                          : 'border-[#3c3c3c] hover:border-[#555] bg-[#2d2d2d]/40'
                         }`}
                     >
                       {/* Mini color preview */}
@@ -661,8 +661,8 @@ function SettingsPanel() {
                         </span>
                       </span>
                       <span className={`truncate flex-1 text-left font-medium ${isActive
-                          ? isLight ? 'text-[#0060c0] font-semibold' : 'text-[var(--accent-color,#007fd4)] font-semibold'
-                          : isLight ? 'text-[#333]' : 'text-[#bbb]'
+                        ? isLight ? 'text-[#0060c0] font-semibold' : 'text-[var(--accent-color,#007fd4)] font-semibold'
+                        : isLight ? 'text-[#333]' : 'text-[#bbb]'
                         }`}>
                         {t.label}
                       </span>
@@ -935,7 +935,7 @@ function SettingsPanel() {
               }`}>
               <div>
                 <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Shell</p>
-                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v2.1.0</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v2.1.1</p>
               </div>
               <AlignJustify className="w-4 h-4 text-[#858585]" />
             </div>
@@ -945,7 +945,7 @@ function SettingsPanel() {
         <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
           <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
           <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>VS Code Portfolio</p>
-          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 2.1.0</p>
+          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 2.1.1</p>
           <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Next.js 16 / React 19 / Turbopack</p>
           <button
             type="button"

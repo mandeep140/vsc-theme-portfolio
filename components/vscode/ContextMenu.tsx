@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import {
   Copy, CheckSquare, WrapText, Hash, Eye, Sparkles,
   Terminal, Sidebar as SidebarIcon, Download, Sun, Moon,
-  X, Layers, FolderOpen, Code
+  X, Layers, FolderOpen, Code, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { findFileById, fileTree } from '@/data/portfolio-data';
@@ -36,6 +36,7 @@ export default function ContextMenu() {
     closeTab,
     closeOtherTabs,
     closeAllTabs,
+    reorderTabs,
     openFile,
     toggleFolder,
     theme,
@@ -243,6 +244,45 @@ export default function ContextMenu() {
 
           {openTabs.length > 1 && (
             <>
+              {(() => {
+                const targetTabIndex = openTabs.findIndex((t) => t.id === menu.targetId);
+                return (
+                  <>
+                    {targetTabIndex > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          reorderTabs(targetTabIndex, targetTabIndex - 1);
+                          playClickSound();
+                          setMenu((s) => ({ ...s, isOpen: false }));
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'}`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <ChevronLeft className="w-3.5 h-3.5 opacity-80" /> Move Tab Left
+                        </span>
+                      </button>
+                    )}
+
+                    {targetTabIndex >= 0 && targetTabIndex < openTabs.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          reorderTabs(targetTabIndex, targetTabIndex + 1);
+                          playClickSound();
+                          setMenu((s) => ({ ...s, isOpen: false }));
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'}`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <ChevronRight className="w-3.5 h-3.5 opacity-80" /> Move Tab Right
+                        </span>
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
+
               <button
                 type="button"
                 onClick={() => {
