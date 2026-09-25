@@ -1,9 +1,20 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Eye, Code, Sparkles, FolderKanban, Terminal as TerminalIcon, Mail, Sliders, Settings, FileCode } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {
+  vscDarkPlus, vs,
+  oneDark, dracula, okaidia,
+  solarizedDarkAtom, solarizedlight,
+  nord, gruvboxDark, gruvboxLight,
+  materialDark, materialLight, materialOceanic,
+  nightOwl, synthwave84, lucario,
+  atomDark, shadesOfPurple, tomorrow, oneLight,
+  darcula, a11yDark, base16AteliersulphurpoolLight,
+  coldarkDark, coldarkCold, xonokai, duotoneDark, duotoneEarth, duotoneLight, coy, twilight,
+  ghcolors,
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { usePortfolioStore } from '@/store/portfolio-store';
 import { findFileById, fileTree } from '@/data/portfolio-data';
 import Image from 'next/image';
@@ -18,6 +29,7 @@ function EditorTabs() {
 
   return (
     <div
+      data-panel="tab-bar"
       className={`flex items-center border-b overflow-x-auto flex-shrink-0 scrollbar-hide transition-colors duration-150 ${isLight
         ? 'bg-[#f3f3f3] border-[#e4e4e4]'
         : 'bg-[#252526] border-[#1e1e1e]'
@@ -62,10 +74,10 @@ function EditorTabs() {
                   : tab.language === 'markdown'
                     ? 'MD'
                     : tab.language === 'binary'
-                      ? 'IMG'
-                      : 'F'}
+                      ? 'PDF'
+                      : 'JS'}
             </span>
-            <span className="text-[13px] truncate">{tab.name}</span>
+            <span className="truncate text-[12px] md:text-[13px]">{tab.name}</span>
             <button
               type="button"
               onClick={(e) => {
@@ -73,9 +85,9 @@ function EditorTabs() {
                 playClickSound();
                 closeTab(tab.id);
               }}
-              className={`ml-auto p-0.5 rounded transition-all flex-shrink-0 ${isActive
+              className={`p-0.5 rounded ml-1 transition-all ${isActive
                 ? isLight
-                  ? 'opacity-70 hover:opacity-100 hover:bg-[#dedede]'
+                  ? 'opacity-70 hover:opacity-100 hover:bg-[#e0e0e0]'
                   : 'opacity-70 hover:opacity-100 hover:bg-[#404040]'
                 : isLight
                   ? 'opacity-0 group-hover:opacity-100 hover:bg-[#dedede]'
@@ -92,19 +104,53 @@ function EditorTabs() {
   );
 }
 
-function buildEditorTheme(baseTheme: Record<string, React.CSSProperties>, lineNumberColor: string) {
-  return {
-    ...baseTheme,
-    linenumber: { color: lineNumberColor },
-    'react-syntax-highlighter-line-number': { color: lineNumberColor },
-  };
+// Per-theme syntax highlighter configuration
+type ThemeConfig = { style: Record<string, React.CSSProperties>; bg: string; lineNumColor: string; };
+
+const THEME_CONFIGS: Record<string, ThemeConfig> = {
+  // Dark Themes
+  'dark':               { style: vscDarkPlus,        bg: '#1e1e1e', lineNumColor: '#858585' },
+  'one-dark-pro':       { style: oneDark,             bg: '#282c34', lineNumColor: '#5c6370' },
+  'dracula':            { style: dracula,             bg: '#282a36', lineNumColor: '#6272a4' },
+  'monokai':            { style: okaidia,             bg: '#272822', lineNumColor: '#75715e' },
+  'solarized-dark':     { style: solarizedDarkAtom,   bg: '#002b36', lineNumColor: '#586e75' },
+  'github-dark':        { style: coldarkDark,         bg: '#0d1117', lineNumColor: '#7d8590' },
+  'catppuccin-mocha':   { style: atomDark,            bg: '#1e1e2e', lineNumColor: '#6c7086' },
+  'nord':               { style: nord,               bg: '#2e3440', lineNumColor: '#616e88' },
+  'tokyo-night':        { style: materialOceanic,     bg: '#1a1b26', lineNumColor: '#565f89' },
+  'tokyo-night-storm':  { style: duotoneDark,         bg: '#24283b', lineNumColor: '#565f89' },
+  'gruvbox':            { style: gruvboxDark,         bg: '#282828', lineNumColor: '#928374' },
+  'ayu-mirage':         { style: darcula,             bg: '#1f2430', lineNumColor: '#707a8c' },
+  'material-dark':      { style: materialDark,        bg: '#212121', lineNumColor: '#546e7a' },
+  'cobalt2':            { style: lucario,             bg: '#193549', lineNumColor: '#5a7796' },
+  'night-owl':          { style: nightOwl,            bg: '#011627', lineNumColor: '#4b6479' },
+  'synthwave84':        { style: synthwave84,         bg: '#2b213a', lineNumColor: '#848bbd' },
+  'rose-pine':          { style: a11yDark,            bg: '#191724', lineNumColor: '#6e6a86' },
+  'shades-of-purple':   { style: shadesOfPurple,      bg: '#2d2b55', lineNumColor: '#8b8b9e' },
+  'tomorrow-night':     { style: tomorrow,            bg: '#1d1f21', lineNumColor: '#969896' },
+  'palenight':          { style: xonokai,             bg: '#292d3e', lineNumColor: '#676e95' },
+  'horizon':            { style: coldarkCold,         bg: '#1c1e26', lineNumColor: '#6c6f93' },
+  'abyss':              { style: twilight,            bg: '#000c18', lineNumColor: '#445577' },
+  'red':                { style: duotoneEarth,        bg: '#390000', lineNumColor: '#aa6666' },
+
+  // Light Themes
+  'light':              { style: vs,                 bg: '#ffffff', lineNumColor: '#9e9e9e' },
+  'github-light':       { style: ghcolors,           bg: '#ffffff', lineNumColor: '#57606a' },
+  'solarized-light':    { style: solarizedlight,      bg: '#fdf6e3', lineNumColor: '#93a1a1' },
+  'catppuccin-latte':   { style: base16AteliersulphurpoolLight, bg: '#eff1f5', lineNumColor: '#6c6f85' },
+  'one-light':          { style: oneLight,            bg: '#fafafa', lineNumColor: '#696c77' },
+  'quiet-light':        { style: materialLight,       bg: '#f5f3f4', lineNumColor: '#706b6e' },
+  'gruvbox-light':      { style: gruvboxLight,        bg: '#fbf1c7', lineNumColor: '#7c6f64' },
+  'rose-pine-dawn':     { style: duotoneLight,        bg: '#faf4ed', lineNumColor: '#797593' },
+  'ayu-light':          { style: coy,                 bg: '#fafafa', lineNumColor: '#828a9a' },
+};
+
+function getThemeConfig(colorTheme: string): ThemeConfig {
+  return THEME_CONFIGS[colorTheme] ?? THEME_CONFIGS['dark'];
 }
 
-const darkEditorTheme = buildEditorTheme(vscDarkPlus, '#858585');
-const lightEditorTheme = buildEditorTheme(vs, '#9e9e9e');
-
 function HighlightedCode({ content, language }: { content: string; language?: string }) {
-  const { editorFontSize, showLineNumbers, wordWrap, cursorStyle, theme } = usePortfolioStore();
+  const { editorFontSize, showLineNumbers, wordWrap, cursorStyle, colorTheme } = usePortfolioStore();
   const lineHeight = Math.round(editorFontSize * 1.62);
   const minLineNumberWidth = Math.max(46, Math.round(editorFontSize * 3.4));
   const gutterWidth = showLineNumbers ? minLineNumberWidth + 16 : 16;
@@ -117,7 +163,10 @@ function HighlightedCode({ content, language }: { content: string; language?: st
     y: 16,
   });
   const containerRef = useRef<HTMLDivElement>(null);
-  const isLight = theme === 'light';
+
+  const themeConfig = getThemeConfig(colorTheme);
+  const { style: syntaxStyle, bg: bgColor, lineNumColor } = themeConfig;
+
   const normalizedLanguage =
     language === 'tsx'
       ? 'tsx'
@@ -126,9 +175,6 @@ function HighlightedCode({ content, language }: { content: string; language?: st
         : language === 'markdown'
           ? 'markdown'
           : language || 'typescript';
-
-  const editorTheme = isLight ? lightEditorTheme : darkEditorTheme;
-  const bgColor = isLight ? '#ffffff' : '#1e1e1e';
 
   const handleCodeClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -154,13 +200,14 @@ function HighlightedCode({ content, language }: { content: string; language?: st
     <div
       ref={containerRef}
       onClick={handleCodeClick}
-      className={`flex-1 min-h-0 overflow-auto relative cursor-text animate-fadeIn ${isLight ? 'bg-white' : 'bg-[#1e1e1e]'
-        }`}
+      data-panel="code-view"
+      className="flex-1 min-h-0 overflow-auto relative cursor-text animate-fadeIn"
+      style={{ backgroundColor: bgColor }}
     >
       <div className="relative min-w-full inline-block min-h-full">
         <SyntaxHighlighter
           language={normalizedLanguage}
-          style={editorTheme}
+          style={syntaxStyle}
           showLineNumbers={showLineNumbers}
           wrapLines={wordWrap}
           wrapLongLines={wordWrap}
@@ -168,7 +215,7 @@ function HighlightedCode({ content, language }: { content: string; language?: st
             minWidth: `${minLineNumberWidth}px`,
             paddingRight: '16px',
             paddingLeft: '12px',
-            color: isLight ? '#9e9e9e' : '#858585',
+            color: lineNumColor,
             textAlign: 'right',
             userSelect: 'none',
             fontSize: `${editorFontSize}px`,
@@ -204,7 +251,7 @@ function HighlightedCode({ content, language }: { content: string; language?: st
           <span
             className="editor-blinking-cursor absolute pointer-events-none"
             style={{
-              backgroundColor: isLight ? '#007acc' : '#aeafad',
+              backgroundColor: '#aeafad',
               width: cursorStyle === 'block' ? `${cursorBlockWidth}px` : cursorStyle === 'underline' ? `${cursorBlockWidth}px` : '2px',
               height: cursorStyle === 'underline' ? '2px' : `${lineHeight - 2}px`,
               left: `${cursorPos.x}px`,
@@ -383,6 +430,7 @@ function Breadcrumbs({ path }: { path: string[] }) {
 
   return (
     <div
+      data-panel="breadcrumb"
       className={`flex items-center gap-1 px-3 md:px-4 py-1 text-[12px] flex-shrink-0 overflow-x-auto scrollbar-hide border-b transition-colors duration-150 ${isLight
         ? 'bg-white border-[#e4e4e4] text-[#6e7781]'
         : 'bg-[#1e1e1e] border-[#252526] text-[#858585]'
@@ -646,6 +694,7 @@ export default function EditorPanel() {
 
   return (
     <div
+      data-panel="editor"
       onDragOver={handleDragOver}
       onDragEnter={() => setIsDragOverEditor(true)}
       onDragLeave={handleDragLeave}

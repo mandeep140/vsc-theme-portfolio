@@ -25,10 +25,15 @@ export default function ActivityBar() {
     toggleTerminal,
     isMobile,
     theme,
+    colorTheme,
   } = usePortfolioStore();
 
   if (isMobile) return null;
-  const isLight = theme === 'light';
+  const isLight =
+    theme === 'light' ||
+    colorTheme.includes('light') ||
+    colorTheme.endsWith('-latte') ||
+    colorTheme.endsWith('-dawn');
 
   const topItems = [
     { id: 'explorer' as const, icon: Files, label: 'Explorer' },
@@ -51,6 +56,7 @@ export default function ActivityBar() {
 
   return (
     <div
+      data-panel="activity"
       className={`flex flex-col items-center w-12 border-r flex-shrink-0 py-1 justify-between select-none transition-colors duration-150 ${isLight
         ? 'bg-[#f8f8f8] border-[#e4e4e4] text-[#616161]'
         : 'bg-[#333333] border-[#252526] text-[#858585]'
@@ -64,6 +70,7 @@ export default function ActivityBar() {
             <button
               key={item.id}
               type="button"
+              data-active={isActive ? 'true' : 'false'}
               data-tour={item.id === 'explorer' ? 'explorer-btn' : item.id === 'assistant' ? 'assistant-btn' : item.id === 'contact' ? 'contact-btn' : undefined}
               onClick={() => handlePanelClick(item.id)}
               className="relative w-12 h-12 flex items-center justify-center transition-colors duration-100 group cursor-pointer"
@@ -71,7 +78,7 @@ export default function ActivityBar() {
               aria-label={item.label}
             >
               <div
-                className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity duration-100 ${isActive
+                className={`activity-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity duration-100 ${isActive
                   ? isLight
                     ? 'opacity-100 bg-[#005fb8]'
                     : 'opacity-100 bg-white'
@@ -105,6 +112,7 @@ export default function ActivityBar() {
       <div className="flex flex-col items-center gap-0.5 pb-1">
         <button
           type="button"
+          data-active={terminalVisible ? 'true' : 'false'}
           data-tour="terminal-btn"
           onClick={toggleTerminal}
           className="relative w-12 h-12 flex items-center justify-center transition-colors group cursor-pointer"
@@ -112,7 +120,7 @@ export default function ActivityBar() {
           aria-label="Terminal"
         >
           <div
-            className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity ${terminalVisible
+            className={`activity-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity ${terminalVisible
               ? isLight
                 ? 'opacity-100 bg-[#005fb8]'
                 : 'opacity-100 bg-white'
@@ -142,6 +150,7 @@ export default function ActivityBar() {
 
         <button
           type="button"
+          data-active={activeSidebarPanel === 'profile' && sidebarVisible ? 'true' : 'false'}
           onClick={() => handlePanelClick('profile')}
           className="relative w-12 h-12 flex items-center justify-center transition-colors group cursor-pointer"
           title="Developer Profile"
@@ -149,7 +158,7 @@ export default function ActivityBar() {
           data-tour="profile-btn"
         >
           <div
-            className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity ${activeSidebarPanel === 'profile' && sidebarVisible
+            className={`activity-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity ${activeSidebarPanel === 'profile' && sidebarVisible
               ? isLight
                 ? 'opacity-100 bg-[#005fb8]'
                 : 'opacity-100 bg-white'
@@ -179,6 +188,7 @@ export default function ActivityBar() {
 
         <button
           type="button"
+          data-active={activeSidebarPanel === 'settings' && sidebarVisible ? 'true' : 'false'}
           data-tour="settings-btn"
           onClick={() => handlePanelClick('settings')}
           className="relative w-12 h-12 flex items-center justify-center transition-colors group cursor-pointer"
@@ -186,7 +196,7 @@ export default function ActivityBar() {
           aria-label="Settings"
         >
           <div
-            className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity ${activeSidebarPanel === 'settings' && sidebarVisible
+            className={`activity-indicator absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 transition-opacity ${activeSidebarPanel === 'settings' && sidebarVisible
               ? isLight
                 ? 'opacity-100 bg-[#005fb8]'
                 : 'opacity-100 bg-white'

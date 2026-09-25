@@ -198,6 +198,7 @@ function MobileBottomBar() {
       )}
 
       <div
+        data-panel="mobile-bar"
         className={`flex items-center justify-around border-t flex-shrink-0 z-30 relative select-none transition-colors duration-150 h-[48px] ${
           isLight
             ? 'bg-[#f0f0f0] border-[#d8d8d8] text-[#333333]'
@@ -321,6 +322,7 @@ export default function VSCodeLayout() {
     commandPaletteOpen,
     toggleCommandPalette,
     theme,
+    colorTheme,
     editorFontSize,
     setEditorFontSize,
   } = usePortfolioStore();
@@ -329,9 +331,14 @@ export default function VSCodeLayout() {
 
   useEffect(() => {
     try {
+      const savedColorTheme = localStorage.getItem('portfolio-color-theme');
+      if (savedColorTheme) {
+        usePortfolioStore.getState().setColorTheme(savedColorTheme);
+        return;
+      }
       const saved = localStorage.getItem('portfolio-theme') as 'dark' | 'light' | null;
       if (saved && (saved === 'dark' || saved === 'light') && saved !== theme) {
-        usePortfolioStore.getState().setTheme(saved);
+        usePortfolioStore.getState().setColorTheme(saved);
         return;
       }
     } catch { }
@@ -346,7 +353,191 @@ export default function VSCodeLayout() {
       root.classList.add('dark');
       root.setAttribute('data-theme', 'dark');
     }
-  }, [theme]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Inject per-theme CSS overrides for structural panels
+  useEffect(() => {
+    // Use rAF so the theme class on <html> is committed before we read computed style
+    const raf = requestAnimationFrame(() => {
+      const styleId = 'portfolio-theme-overrides';
+      let el = document.getElementById(styleId) as HTMLStyleElement | null;
+      if (!el) {
+        el = document.createElement('style');
+        el.id = styleId;
+        document.head.appendChild(el);
+      }
+
+      // Read CSS vars from the current theme class on <html>
+      const computed = getComputedStyle(document.documentElement);
+      const bgEditor   = computed.getPropertyValue('--bg-editor').trim()       || (isLight ? '#ffffff' : '#1e1e1e');
+      const bgSidebar  = computed.getPropertyValue('--bg-sidebar').trim()      || (isLight ? '#f3f3f3' : '#252526');
+      const bgActivity = computed.getPropertyValue('--bg-activity').trim()     || (isLight ? '#f3f3f3' : '#333333');
+      const bgTitle    = computed.getPropertyValue('--bg-title').trim()        || (isLight ? '#dddddd' : '#323233');
+      const bgTabInact = computed.getPropertyValue('--bg-tab-inactive').trim() || (isLight ? '#ececec' : '#2d2d2d');
+      const bgTabAct   = computed.getPropertyValue('--bg-tab-active').trim()   || (isLight ? '#ffffff' : '#1e1e1e');
+      const bgInput    = computed.getPropertyValue('--bg-input').trim()        || (isLight ? '#ffffff' : '#3c3c3c');
+      const bgHover    = computed.getPropertyValue('--bg-hover').trim()        || (isLight ? '#e8e8e8' : '#2a2d2e');
+      const textMain   = computed.getPropertyValue('--text-main').trim()       || (isLight ? '#24292f' : '#cccccc');
+      const textMuted  = computed.getPropertyValue('--text-muted').trim()      || (isLight ? '#6e7781' : '#858585');
+      const textHead   = computed.getPropertyValue('--text-heading').trim()    || (isLight ? '#1f2328' : '#bbbbbb');
+      const accent     = computed.getPropertyValue('--accent-color').trim()    || '#007fd4';
+      const accentSb   = computed.getPropertyValue('--accent-statusbar').trim()|| '#007acc';
+      const borderC    = computed.getPropertyValue('--border-color').trim()    || (isLight ? '#e4e4e4' : '#1e1e1e');
+      const borderS    = computed.getPropertyValue('--border-subtle').trim()   || (isLight ? '#dcdcdc' : '#252526');
+      // Activity bar colors
+      const activityInactive = isLight ? '#616161' : '#969696';
+      const activityHover = isLight ? '#000000' : '#ffffff';
+      const activityActive = isLight ? (accent || '#005fb8') : '#ffffff';
+
+      el.textContent = `
+        /* === ROOT === */
+        #vscode-root, [data-panel="editor-root"] {
+          background-color: ${bgEditor} !important;
+          color: ${textMain} !important;
+          transition: background-color 0.15s, color 0.15s;
+        }
+
+        /* === TITLEBAR === */
+        [data-panel="titlebar"] {
+          background-color: ${bgTitle} !important;
+          color: ${textMain} !important;
+          border-bottom-color: ${borderS} !important;
+        }
+        [data-panel="titlebar"] [data-menu-btn="true"] {
+          color: ${textMain} !important;
+          opacity: 1 !important;
+        }
+        [data-panel="titlebar"] [data-menu-btn="true"]:hover {
+          color: ${textHead} !important;
+          background-color: ${bgHover} !important;
+        }
+        [data-panel="titlebar"] [data-titlebar-title="true"] {
+          color: ${textMain} !important;
+        }
+        [data-panel="titlebar"] [data-action-btn="true"] {
+          background-color: ${accentSb} !important;
+          color: #ffffff !important;
+        }
+        [data-panel="titlebar"] [data-action-btn="true"] * {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+
+        /* === ACTIVITY BAR === */
+        [data-panel="activity"] {
+          background-color: ${bgActivity} !important;
+          border-right-color: ${borderS} !important;
+        }
+        [data-panel="activity"] button svg {
+          color: ${activityInactive};
+          transition: color 0.1s ease;
+        }
+        [data-panel="activity"] button:hover svg {
+          color: ${activityHover} !important;
+        }
+        [data-panel="activity"] button[data-active="true"] svg,
+        [data-panel="activity"] button.active svg {
+          color: ${activityActive} !important;
+        }
+        [data-panel="activity"] button[data-active="true"] .activity-indicator {
+          background-color: ${activityActive} !important;
+          opacity: 1 !important;
+        }
+
+        /* === SIDEBAR === */
+        [data-panel="sidebar"] {
+          background-color: ${bgSidebar} !important;
+          border-right-color: ${borderC} !important;
+        }
+        [data-panel="sidebar"] input,
+        [data-panel="sidebar"] textarea {
+          background-color: ${bgInput} !important;
+          color: ${textMain} !important;
+          border-color: ${borderC} !important;
+        }
+
+        /* === EDITOR AREA & CODE VIEW === */
+        [data-panel="editor"] {
+          background-color: ${bgEditor} !important;
+          color: ${textMain} !important;
+        }
+        [data-panel="code-view"] {
+          background-color: ${bgEditor} !important;
+        }
+
+        /* === TAB BAR === */
+        [data-panel="tab-bar"] {
+          background-color: ${bgSidebar} !important;
+          border-bottom-color: ${borderC} !important;
+        }
+
+        /* === BREADCRUMB === */
+        [data-panel="breadcrumb"] {
+          background-color: ${bgEditor} !important;
+          border-bottom-color: ${borderS} !important;
+          color: ${textMuted} !important;
+        }
+        [data-panel="breadcrumb"] span {
+          color: ${textMuted} !important;
+        }
+        [data-panel="breadcrumb"] span:last-child {
+          color: ${textMain} !important;
+        }
+
+        /* === TERMINAL === */
+        [data-panel="terminal"] {
+          background-color: ${bgEditor} !important;
+          color: ${textMain} !important;
+          border-top-color: ${borderS} !important;
+        }
+        [data-panel="terminal"] [data-terminal-header="true"],
+        [data-panel="terminal"] > div:first-child,
+        [data-panel="terminal"] > div:nth-child(2) {
+          background-color: ${bgSidebar} !important;
+          border-bottom-color: ${borderS} !important;
+          color: ${textMain} !important;
+        }
+        [data-panel="terminal"] button {
+          color: ${textMuted} !important;
+        }
+        [data-panel="terminal"] button:hover {
+          color: ${textMain} !important;
+        }
+
+        /* === STATUS BAR === */
+        [data-panel="statusbar"] { background-color: ${accentSb} !important; }
+
+        /* === MOBILE BAR === */
+        [data-panel="mobile-bar"] {
+          background-color: ${bgTitle} !important;
+          border-top-color: ${borderS} !important;
+          color: ${textMuted} !important;
+        }
+
+        /* === WELCOME / EMPTY EDITOR === */
+        [data-panel="editor"] > div[class*="flex-col"][class*="items-center"] {
+          background-color: ${bgEditor} !important;
+          color: ${textMain} !important;
+        }
+
+        /* === MARKDOWN PREVIEW === */
+        [data-panel="editor"] .markdown-preview,
+        [data-panel="editor"] [class*="prose"] {
+          background-color: ${bgEditor} !important;
+          color: ${textMain} !important;
+        }
+
+        /* Scrollbar theming */
+        [data-panel="sidebar"] ::-webkit-scrollbar-thumb,
+        [data-panel="editor"] ::-webkit-scrollbar-thumb,
+        [data-panel="terminal"] ::-webkit-scrollbar-thumb {
+          background-color: ${borderC} !important;
+        }
+      `;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [colorTheme, isLight]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -429,6 +620,7 @@ export default function VSCodeLayout() {
   return (
     <div
       id="vscode-root"
+      data-panel="editor-root"
       className={`h-[100dvh] w-screen flex flex-col overflow-hidden transition-colors duration-150 ${isLight ? 'bg-white text-[#24292f]' : 'bg-[#1e1e1e] text-[#cccccc]'
         }`}
     >

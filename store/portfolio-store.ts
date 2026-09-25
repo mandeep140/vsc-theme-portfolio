@@ -65,6 +65,9 @@ interface PortfolioStore {
   theme: 'dark' | 'light';
   setTheme: (theme: 'dark' | 'light') => void;
 
+  colorTheme: string;
+  setColorTheme: (colorTheme: string) => void;
+
   editorFontSize: number;
   setEditorFontSize: (size: number) => void;
   showLineNumbers: boolean;
@@ -159,7 +162,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   toggleMdPreview: () => set((s) => ({ mdPreviewMode: !s.mdPreviewMode })),
 
   terminalHistory: [
-    { type: 'dim', content: 'Portfolio Terminal v2.0.0' },
+    { type: 'dim', content: 'Portfolio Terminal v2.1.0' },
     { type: 'dim', content: 'Type "help" to see available commands.' },
     { type: 'output', content: '' },
   ],
@@ -394,7 +397,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         output = [
           { type: 'info', content: '        /\\                   mandeep@portfolio' },
           { type: 'info', content: '       /  \\                  -----------------' },
-          { type: 'success', content: '      /    \\                 OS: PortfolioOS v2.0.0' },
+          { type: 'success', content: '      /    \\                 OS: PortfolioOS v2.1.0' },
           { type: 'success', content: '     /  /\\  \\                Host: VS Code Theme' },
           { type: 'highlight', content: '    /  /  \\  \\               Kernel: Next.js 16' },
           { type: 'highlight', content: '   /  /    \\  \\              Uptime: 20+ years' },
@@ -513,7 +516,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
         const sub = args[0];
         if (sub === 'run' && args[1] === 'dev') {
           output = [
-            { type: 'command', content: '> portfolio@2.0.0 dev' },
+            { type: 'command', content: '> portfolio@2.1.0 dev' },
             { type: 'command', content: '> next dev' },
             { type: 'output', content: '' },
             { type: 'success', content: '  ▲ Next.js 16.3.1 (Turbopack)' },
@@ -574,7 +577,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       }
 
       case 'uname':
-        output = [{ type: 'output', content: 'PortfolioOS 2.0.0 x86_64 Next.js/16 TypeScript/5' }];
+        output = [{ type: 'output', content: 'PortfolioOS 2.1.0 x86_64 Next.js/16 TypeScript/5' }];
         break;
 
       case 'stats': {
@@ -715,7 +718,33 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     set((s) => ({ toasts: s.toasts.filter(t => t.id !== id) }));
   },
 
-  theme: 'dark',
+  theme: typeof window !== 'undefined'
+    ? (() => {
+      const ct = localStorage.getItem('portfolio-color-theme') || '';
+      const t = localStorage.getItem('portfolio-theme') || '';
+      const lightThemes = [
+        'light',
+        'solarized-light',
+        'github-light',
+        'catppuccin-latte',
+        'one-light',
+        'quiet-light',
+        'gruvbox-light',
+        'rose-pine-dawn',
+        'ayu-light',
+      ];
+      if (
+        lightThemes.includes(ct) ||
+        ct.endsWith('-light') ||
+        ct.endsWith('-latte') ||
+        ct.endsWith('-dawn') ||
+        t === 'light'
+      ) {
+        return 'light';
+      }
+      return 'dark';
+    })()
+    : 'dark',
   setTheme: (theme: 'dark' | 'light') => {
     playToggleSound();
     if (typeof window !== 'undefined') {
@@ -734,6 +763,60 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
       }
     }
     set({ theme });
+  },
+
+  colorTheme: typeof window !== 'undefined' ? (localStorage.getItem('portfolio-color-theme') || 'dark') : 'dark',
+  setColorTheme: (colorTheme: string) => {
+    playToggleSound();
+    // Determine if this is a light theme variant
+    const lightThemes = [
+      'light',
+      'solarized-light',
+      'github-light',
+      'catppuccin-latte',
+      'one-light',
+      'quiet-light',
+      'gruvbox-light',
+      'rose-pine-dawn',
+      'ayu-light',
+    ];
+    const isLightVariant =
+      lightThemes.includes(colorTheme) ||
+      colorTheme.endsWith('-light') ||
+      colorTheme.endsWith('-latte') ||
+      colorTheme.endsWith('-dawn');
+    const themeMode: 'dark' | 'light' = isLightVariant ? 'light' : 'dark';
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('portfolio-color-theme', colorTheme);
+        localStorage.setItem('portfolio-theme', themeMode);
+      } catch { }
+      const root = document.documentElement;
+
+      // Cleanly remove all previous theme classes
+      Array.from(root.classList)
+        .filter((c) => c.startsWith('theme-') || c === 'dark' || c === 'light')
+        .forEach((c) => root.classList.remove(c));
+
+      // Apply the chosen theme class and data-theme
+      if (colorTheme === 'dark') {
+        root.classList.add('dark');
+        root.setAttribute('data-theme', 'dark');
+      } else if (colorTheme === 'light') {
+        root.classList.add('theme-light');
+        root.setAttribute('data-theme', 'light');
+      } else {
+        root.classList.add(`theme-${colorTheme}`);
+        root.setAttribute('data-theme', isLightVariant ? 'light' : 'dark');
+        if (isLightVariant) {
+          root.classList.add('theme-light');
+        } else {
+          root.classList.add('dark');
+        }
+      }
+    }
+    set({ colorTheme, theme: themeMode });
   },
 
   editorFontSize: typeof window !== 'undefined' ? parseInt(localStorage.getItem('portfolio_font_size') || '13', 10) : 13,

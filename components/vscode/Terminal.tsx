@@ -304,6 +304,7 @@ export default function Terminal() {
   return (
     <div
       ref={containerRef}
+      data-panel="terminal"
       className={`flex flex-col flex-shrink-0 overflow-hidden transition-colors duration-150 ${isLight ? 'bg-white' : 'bg-[#1e1e1e]'
         }`}
       style={{
@@ -329,6 +330,7 @@ export default function Terminal() {
       )}
 
       <div
+        data-terminal-header="true"
         className={`flex items-center h-[35px] border-b flex-shrink-0 min-w-0 transition-colors duration-150 ${isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'
           }`}
       >

@@ -42,7 +42,7 @@ export default function StatusBar() {
           : null;
 
   return (
-    <div className="flex items-center h-[22px] bg-[#007acc] text-white text-[12px] px-2 select-none flex-shrink-0">
+    <div data-panel="statusbar" className="flex items-center h-[22px] bg-[#007acc] text-white text-[12px] px-2 select-none flex-shrink-0">
       <div className="flex items-center gap-1">
         <button
           onClick={() => setActiveSidebarPanel('git')}

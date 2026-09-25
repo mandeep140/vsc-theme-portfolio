@@ -39,7 +39,7 @@ export default function ContextMenu() {
     openFile,
     toggleFolder,
     theme,
-    setTheme,
+    setColorTheme,
     wordWrap,
     toggleWordWrap,
     showLineNumbers,
@@ -562,8 +562,7 @@ export default function ContextMenu() {
           <button
             type="button"
             onClick={() => {
-              playToggleSound();
-              setTheme(theme === 'dark' ? 'light' : 'dark');
+              setColorTheme(theme === 'dark' ? 'light' : 'dark');
               setMenu((s) => ({ ...s, isOpen: false }));
             }}
             className={`w-full flex items-center justify-between px-3 py-1.5 transition-colors cursor-pointer ${isLight ? 'hover:bg-[#007acc] hover:text-white' : 'hover:bg-[#094771] hover:text-white'

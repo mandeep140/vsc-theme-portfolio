@@ -24,14 +24,20 @@ function MenuDropdown({
   items,
   onClose,
   theme,
+  colorTheme,
 }: {
   items: MenuItem[];
   onClose: () => void;
   theme: 'dark' | 'light';
+  colorTheme?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const showToast = usePortfolioStore((s) => s.showToast);
-  const isLight = theme === 'light';
+  const isLight =
+    theme === 'light' ||
+    (colorTheme
+      ? colorTheme.includes('light') || colorTheme.endsWith('-latte') || colorTheme.endsWith('-dawn')
+      : false);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -111,6 +117,7 @@ export default function TitleBar() {
     openFile,
     isMobile,
     theme,
+    colorTheme,
   } = usePortfolioStore();
 
   const activeTab = openTabs.find((t) => t.id === activeTabId);
@@ -118,7 +125,11 @@ export default function TitleBar() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
   const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const isLight = theme === 'light';
+  const isLight =
+    theme === 'light' ||
+    colorTheme.includes('light') ||
+    colorTheme.endsWith('-latte') ||
+    colorTheme.endsWith('-dawn');
 
   const handleMenuOpen = (name: string) => {
     if (openMenu === name) {
@@ -451,7 +462,7 @@ export default function TitleBar() {
       },
       {
         label: 'About VS Code Portfolio',
-        action: () => showToast('VS Code Portfolio v2.0.0 — Built by Mandeep Nagar'),
+        action: () => showToast('VS Code Portfolio v2.1.0 — Built by Mandeep Nagar'),
       },
     ],
   };
@@ -524,7 +535,7 @@ export default function TitleBar() {
     },
     {
       label: 'About Portfolio',
-      action: () => showToast('VS Code Portfolio v2.0.0 — Built by Mandeep Nagar'),
+      action: () => showToast('VS Code Portfolio v2.1.0 — Built by Mandeep Nagar'),
     },
   ];
 
@@ -534,6 +545,7 @@ export default function TitleBar() {
 
   return (
     <div
+      data-panel="titlebar"
       className={`flex items-center h-[30px] border-b select-none flex-shrink-0 md:h-[35px] relative transition-colors duration-150 ${isLight
         ? 'bg-[#dddddd] border-[#cccccc] text-[#24292f]'
         : 'bg-[#323233] border-[#252526] text-[#cccccc]'
@@ -550,13 +562,14 @@ export default function TitleBar() {
           >
             <button
               type="button"
+              data-menu-btn="true"
               onMouseDown={(e) => {
                 e.stopPropagation();
                 handleMenuOpen(name);
               }}
               className={`px-2 py-0.5 md:py-1 rounded-sm whitespace-nowrap transition-colors cursor-pointer ${openMenu === name
                 ? isLight
-                  ? 'bg-[#c8c8c8] text-black font-medium'
+                  ? 'bg-[#c8c8c8] text-[#111111] font-medium'
                   : 'bg-[#505050] text-white font-medium'
                 : isLight
                   ? 'text-[#24292f] hover:bg-[#cecece]'
@@ -577,13 +590,14 @@ export default function TitleBar() {
           >
             <button
               type="button"
+              data-menu-btn="true"
               onMouseDown={(e) => {
                 e.stopPropagation();
                 handleMenuOpen('More');
               }}
               className={`px-2 py-0.5 rounded-sm whitespace-nowrap transition-colors cursor-pointer font-medium ${openMenu === 'More'
                 ? isLight
-                  ? 'bg-[#c8c8c8] text-black'
+                  ? 'bg-[#c8c8c8] text-[#111111]'
                   : 'bg-[#505050] text-white'
                 : isLight
                   ? 'text-[#0060c0] hover:bg-[#cecece]'
@@ -596,13 +610,14 @@ export default function TitleBar() {
         )}
       </div>
 
-      <div className="flex-1 text-center text-[11px] md:text-[13px] truncate px-2 min-w-0 font-medium opacity-90">
+      <div data-titlebar-title="true" className="flex-1 text-center text-[11px] md:text-[13px] truncate px-2 min-w-0 font-medium opacity-90">
         {displayName}Mandeep Nagar — Portfolio — Visual Studio Code
       </div>
 
       <div className="flex items-center gap-1.5 px-2 flex-shrink-0">
         <button
           type="button"
+          data-action-btn="true"
           onClick={() => {
             if (!usePortfolioStore.getState().terminalVisible) toggleTerminal();
             executeCommand('npm run dev');
@@ -631,6 +646,7 @@ export default function TitleBar() {
             items={openMenu === 'More' ? mobileMoreItems : menus[openMenu]}
             onClose={() => setOpenMenu(null)}
             theme={theme}
+            colorTheme={colorTheme}
           />
         </div>
       )}

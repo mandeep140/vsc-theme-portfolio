@@ -558,7 +558,7 @@ function ProfilePanel() {
 
 function SettingsPanel() {
   const {
-    theme, setTheme,
+    theme, colorTheme, setColorTheme,
     editorFontSize, setEditorFontSize,
     showLineNumbers, toggleLineNumbers,
     wordWrap, toggleWordWrap,
@@ -598,34 +598,82 @@ function SettingsPanel() {
           <p className={`text-[11px] uppercase tracking-wider mb-3 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Appearance</p>
           <div className="space-y-3">
             <div>
-              <p className={`text-[12px] mb-2 font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Color Theme</p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTheme('dark')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded text-[12px] border transition-all cursor-pointer ${theme === 'dark'
-                    ? 'bg-[#094771] border-[#007fd4] text-white shadow-sm font-semibold'
-                    : isLight
-                      ? 'bg-white border-[#d0d0d0] text-[#555555] hover:border-[#007acc] hover:text-[#24292f]'
-                      : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
-                    }`}
-                >
-                  <Moon className="w-3.5 h-3.5" />
-                  Dark+
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTheme('light')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded text-[12px] border transition-all cursor-pointer ${theme === 'light'
-                    ? 'bg-[#007acc] border-[#007acc] text-white shadow-sm font-semibold'
-                    : isLight
-                      ? 'bg-white border-[#d0d0d0] text-[#555555] hover:border-[#007acc] hover:text-[#24292f]'
-                      : 'bg-[#2d2d2d] border-[#3c3c3c] text-[#858585] hover:border-[#007fd4] hover:text-[#cccccc]'
-                    }`}
-                >
-                  <Sun className="w-3.5 h-3.5" />
-                  Light+
-                </button>
+              <div className="flex items-center justify-between mb-2">
+                <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Color Theme (32)</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-0.5" style={{ scrollbarWidth: 'thin' }}>
+                {([
+                  // Light Themes
+                  { id: 'light', label: 'Light+', editor: '#ffffff', sidebar: '#f3f3f3', accent: '#007acc' },
+                  { id: 'github-light', label: 'GitHub Light', editor: '#ffffff', sidebar: '#f6f8fa', accent: '#0969da' },
+                  { id: 'solarized-light', label: 'Solarized Light', editor: '#fdf6e3', sidebar: '#eee8d5', accent: '#268bd2' },
+                  { id: 'catppuccin-latte', label: 'Catppuccin Latte', editor: '#eff1f5', sidebar: '#e6e9ef', accent: '#1e66f5' },
+                  { id: 'one-light', label: 'One Light', editor: '#fafafa', sidebar: '#f0f0f0', accent: '#4078f2' },
+                  { id: 'quiet-light', label: 'Quiet Light', editor: '#f5f3f4', sidebar: '#ede9eb', accent: '#705697' },
+                  { id: 'gruvbox-light', label: 'Gruvbox Light', editor: '#fbf1c7', sidebar: '#ebdbb2', accent: '#b57614' },
+                  { id: 'rose-pine-dawn', label: 'Rosé Pine Dawn', editor: '#faf4ed', sidebar: '#f2e9de', accent: '#907aa9' },
+                  { id: 'ayu-light', label: 'Ayu Light', editor: '#fafafa', sidebar: '#f3f4f5', accent: '#ff9940' },
+
+                  // Dark Themes
+                  { id: 'dark', label: 'Dark+', editor: '#1e1e1e', sidebar: '#252526', accent: '#007fd4' },
+                  { id: 'one-dark-pro', label: 'One Dark Pro', editor: '#282c34', sidebar: '#21252b', accent: '#61afef' },
+                  { id: 'dracula', label: 'Dracula', editor: '#282a36', sidebar: '#21222c', accent: '#bd93f9' },
+                  { id: 'monokai', label: 'Monokai', editor: '#272822', sidebar: '#1e1f1c', accent: '#a6e22e' },
+                  { id: 'github-dark', label: 'GitHub Dark', editor: '#0d1117', sidebar: '#161b22', accent: '#58a6ff' },
+                  { id: 'catppuccin-mocha', label: 'Catppuccin Mocha', editor: '#1e1e2e', sidebar: '#181825', accent: '#89b4fa' },
+                  { id: 'nord', label: 'Nord', editor: '#2e3440', sidebar: '#282c34', accent: '#88c0d0' },
+                  { id: 'tokyo-night', label: 'Tokyo Night', editor: '#1a1b26', sidebar: '#16161e', accent: '#7aa2f7' },
+                  { id: 'tokyo-night-storm', label: 'Tokyo Night Storm', editor: '#24283b', sidebar: '#1f2335', accent: '#7aa2f7' },
+                  { id: 'solarized-dark', label: 'Solarized Dark', editor: '#002b36', sidebar: '#073642', accent: '#268bd2' },
+                  { id: 'gruvbox', label: 'Gruvbox Dark', editor: '#282828', sidebar: '#1d2021', accent: '#b8bb26' },
+                  { id: 'ayu-mirage', label: 'Ayu Mirage', editor: '#1f2430', sidebar: '#191e2a', accent: '#ffcc66' },
+                  { id: 'material-dark', label: 'Material Dark', editor: '#212121', sidebar: '#1a1a1a', accent: '#80cbc4' },
+                  { id: 'cobalt2', label: 'Cobalt2', editor: '#193549', sidebar: '#122738', accent: '#ff9d00' },
+                  { id: 'night-owl', label: 'Night Owl', editor: '#011627', sidebar: '#010e1a', accent: '#82aaff' },
+                  { id: 'synthwave84', label: "Synthwave '84", editor: '#2b213a', sidebar: '#241b2f', accent: '#f92aad' },
+                  { id: 'rose-pine', label: 'Rosé Pine', editor: '#191724', sidebar: '#1f1d2e', accent: '#c4a7e7' },
+                  { id: 'shades-of-purple', label: 'Shades of Purple', editor: '#2d2b55', sidebar: '#1e1c3a', accent: '#a599e9' },
+                  { id: 'tomorrow-night', label: 'Tomorrow Night', editor: '#1d1f21', sidebar: '#282a2e', accent: '#81a2be' },
+                  { id: 'palenight', label: 'Palenight', editor: '#292d3e', sidebar: '#252837', accent: '#82aaff' },
+                  { id: 'horizon', label: 'Horizon', editor: '#1c1e26', sidebar: '#16181f', accent: '#e95678' },
+                  { id: 'abyss', label: 'Abyss', editor: '#000c18', sidebar: '#000810', accent: '#2b74c7' },
+                  { id: 'red', label: 'Red Theme', editor: '#390000', sidebar: '#2b0000', accent: '#ff3333' },
+                ] as const).map((t) => {
+                  const isActive = colorTheme === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      title={t.label}
+                      onClick={() => { setColorTheme(t.id); showToast(`Theme: ${t.label}`); }}
+                      className={`relative flex items-center gap-2 px-2 py-2 rounded border text-[11px] transition-all cursor-pointer group ${isActive
+                          ? 'border-[var(--accent-color,#007fd4)] ring-1 ring-[var(--accent-color,#007fd4)]/40 shadow-sm'
+                          : isLight
+                            ? 'border-[#d8d8d8] hover:border-[#bbb] bg-white'
+                            : 'border-[#3c3c3c] hover:border-[#555] bg-[#2d2d2d]/40'
+                        }`}
+                    >
+                      {/* Mini color preview */}
+                      <span className="flex-shrink-0 w-8 h-6 rounded overflow-hidden border border-black/20 flex" aria-hidden>
+                        <span className="w-2.5 h-full flex-shrink-0" style={{ background: t.sidebar }} />
+                        <span className="flex-1 h-full flex flex-col justify-end" style={{ background: t.editor }}>
+                          <span className="block h-1.5 mx-0.5 mb-0.5 rounded-sm" style={{ background: t.accent, opacity: 0.9 }} />
+                        </span>
+                      </span>
+                      <span className={`truncate flex-1 text-left font-medium ${isActive
+                          ? isLight ? 'text-[#0060c0] font-semibold' : 'text-[var(--accent-color,#007fd4)] font-semibold'
+                          : isLight ? 'text-[#333]' : 'text-[#bbb]'
+                        }`}>
+                        {t.label}
+                      </span>
+                      {isActive && (
+                        <span className="flex-shrink-0 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: t.accent }}>
+                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.2 5.7L6.5 2.5" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -887,7 +935,7 @@ function SettingsPanel() {
               }`}>
               <div>
                 <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Shell</p>
-                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v2.0.0</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v2.1.0</p>
               </div>
               <AlignJustify className="w-4 h-4 text-[#858585]" />
             </div>
@@ -897,7 +945,7 @@ function SettingsPanel() {
         <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
           <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
           <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>VS Code Portfolio</p>
-          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 2.0.0</p>
+          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 2.1.0</p>
           <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Next.js 16 / React 19 / Turbopack</p>
           <button
             type="button"
@@ -956,6 +1004,7 @@ export default function Sidebar() {
 
   const sidebarContent = (
     <div
+      data-panel="sidebar"
       className={`flex-shrink-0 flex flex-col h-full overflow-hidden border-r transition-colors duration-150 ${isLight ? 'bg-[#f3f3f3] border-[#e4e4e4]' : 'bg-[#252526] border-[#1e1e1e]'
         }`}
       style={{ width: isMobile ? '100%' : sidebarWidth }}
