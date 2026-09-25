@@ -144,6 +144,7 @@ MANDEEP NAGAR'S OFFICIAL KNOWLEDGE BASE:
      - Status: Private Project
      - Description: Private Next.js application featuring multiple pages, authentication functionality, and monthly date/reset logic.
      - Features: Multi-page navigation, authentication functionality, monthly date handling, reset functionality, responsive UI.
+     - Tech: Next.js, React, JavaScript, Authentication functionality, Vercel.
      - Repo: Private Project (source code confidential).
 
 - Honors & Achievements:
