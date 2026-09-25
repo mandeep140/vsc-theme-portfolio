@@ -17,8 +17,13 @@ const BASE_COMMANDS = [
   'whoami',
   'skills',
   'projects',
-  'contact',
+  'projects list',
+  'project',
   'experience',
+  'showa',
+  'stc',
+  'quick-venue',
+  'contact',
   'stats',
   'ai',
   'neofetch',
@@ -74,21 +79,42 @@ function renderTerminalText(content: string) {
 
 const FOLDER_NAMES = ['projects', 'experience', 'education', 'images', 'files', 'src', '~', '..'];
 
+const PROJECT_SLUGS = [
+  'claimproof',
+  'saarthi',
+  'vscode-portfolio',
+  'portfolio',
+  'theyneedhelp',
+  'listpro',
+  'daily-news-provider',
+  'local-bazaar',
+  'the-production',
+  'offline-todo',
+  'chaiwala',
+  'bachelors',
+];
+
 const FILE_NAMES = [
   'index.ts',
   'skills.ts',
   'achievements.ts',
   'contact.ts',
   'README.md',
-  'adjmd.tsx',
-  'showa-track.ts',
-  'showa-store-management.ts',
+  'claimproof.ts',
+  'saarthi.ts',
   'vscode-portfolio.tsx',
+  'theyneedhelp.ts',
+  'listpro.ts',
+  'daily-news-provider.ts',
   'local-bazaar.ts',
+  'the-production.tsx',
+  'offline-todo.ts',
+  'chaiwala.ts',
+  'bachelors.ts',
   'cto-showa.ts',
-  'freelance-independent.ts',
   'freelance-quick-venue.ts',
   'stc-member.ts',
+  'freelance-independent.ts',
   'iit-patna-bs.ts',
   'senior-secondary.ts',
   'secondary.ts',
@@ -124,6 +150,14 @@ function getContextualSuggestions(input: string): string[] {
     const matches = FILE_NAMES.filter((f) => f.toLowerCase().startsWith(after));
     if (matches.length > 0) {
       return matches.map((f) => `${prefix} ${f}`);
+    }
+  }
+
+  if (lower.startsWith('project ') || lower === 'project') {
+    const after = lower.startsWith('project ') ? lower.slice(8).trim() : '';
+    const matches = PROJECT_SLUGS.filter((s) => s.toLowerCase().startsWith(after));
+    if (matches.length > 0) {
+      return matches.map((s) => `project ${s}`);
     }
   }
 

@@ -59,11 +59,12 @@ const developer = {
   ],
 };
 
-type ProjectCategory = 'all' | 'client' | 'desktop' | 'personal';
+type ProjectCategory = 'all' | 'ai' | 'fullstack' | 'frontend' | 'automation';
 
 interface ProjectItem {
   id: string;
   name: string;
+  title: string;
   category: ProjectCategory;
   categoryLabel: string;
   duration: string;
@@ -78,83 +79,134 @@ interface ProjectItem {
 
 const projects: ProjectItem[] = [
   {
-    id: 'adjmd',
-    name: 'AdJmd',
-    category: 'client',
-    categoryLabel: 'Client SaaS Platform',
-    duration: 'Jun 2025 – Jul 2025',
-    status: 'Delivered to Production',
-    statusColor: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10',
+    id: 'claimproof',
+    name: 'ClaimProof',
+    title: 'Explainable Insurance Claim Evidence Auditor',
+    category: 'ai',
+    categoryLabel: 'AI / Hackathon',
+    duration: 'Sep 6, 2026',
+    status: 'Hackathon Project',
+    statusColor: 'text-purple-400 border-purple-500/20 bg-purple-500/10',
     summary:
-      'Full-stack advertisement management platform engineered to automate media inventory lifecycle, client agreements, and agency operations with rapid 1-month time-to-market.',
+      'Claimant-side insurance claim evidence auditing platform that validates documents, detects inconsistencies, grounds findings in policy clauses, and generates a claim-readiness report before submission.',
     architecture: [
-      'Multi-tenant role-based access control with granular permission schemas',
-      'Media asset processing and CDN delivery pipeline via ImageKit integration',
-      'Optimized MongoDB schemas handling dense inventory allocation matrices',
-      'Production REST API suite with comprehensive input validation',
+      'Gemini-powered multimodal extraction pipeline with structured field extraction & confidence scoring',
+      'Cross-document entity resolution (policyholder, vehicle numbers, driver identities, timestamps)',
+      'Deterministic validation engine for dates, arithmetic, and required documentation rules',
+      'Policy grounding & evidence graph linking findings directly to insurer/IRDAI clauses',
+      'Privacy-aware claim sessions with hashed tokens, PII-safe logging, and 160 passing test suites',
     ],
-    tech: ['Next.js', 'Express.js', 'MongoDB', 'Tailwind CSS', 'ImageKit'],
+    tech: ['Next.js 16', 'React 19', 'Tailwind CSS', 'Node.js', 'Express 5', 'MongoDB Atlas', 'Google Gemini', 'Zod', 'Vitest'],
+    github: 'https://github.com/mandeep140/claimproof',
   },
   {
-    id: 'showa-track',
-    name: 'Showa Track',
-    category: 'client',
-    categoryLabel: 'Enterprise OOH CRM',
-    duration: 'Oct 2025 – Feb 2026',
-    status: 'Production Deployed',
-    statusColor: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10',
+    id: 'saarthi',
+    name: 'Saarthi',
+    title: 'Safety-Aware Navigation',
+    category: 'ai',
+    categoryLabel: 'AI / Safety Navigation',
+    duration: 'Aug 2026 – Sep 2026',
+    status: 'Hackathon Project',
+    statusColor: 'text-amber-400 border-amber-500/20 bg-amber-500/10',
     summary:
-      'Purpose-built CRM platform for Out of Home (OOH) advertising agencies to coordinate media inventory, automated proposal generation, and client booking contracts.',
+      'Privacy-aware safety navigation system that evaluates route risk using contextual, time-dependent, and explainable safety signals rather than just the shortest path.',
     architecture: [
-      'Real-time booking conflict detection engine eliminating double-booking',
-      'Automated PDF quotation and proposal generation pipelines',
-      'Secure NextAuth authentication with audit-ready role segregation',
-      'Scheduled background cron tasks for automated client status reporting',
+      'H3 hexagonal spatial index segmentation for granular, area-level safety scoring',
+      'OSRM-based route engine with robust fallback architectures and real-time alternate routing',
+      'Multi-engine pipeline: Safety, Confidence, Emergency, and Incident Report Engines',
+      'Privacy-first principle: raw location minimization, reduced timestamp precision, session-based route IDs',
+      'Progressive Web App (PWA) client with VersaTiles map tile rendering',
     ],
-    tech: ['Next.js', 'MongoDB', 'NextAuth', 'Nodemailer', 'Tailwind CSS'],
-  },
-  {
-    id: 'showa-store',
-    name: 'Showa Store Management',
-    category: 'desktop',
-    categoryLabel: 'Offline-First Desktop Software',
-    duration: 'Feb 2026 – Apr 2026',
-    status: 'Deployed for Retail',
-    statusColor: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10',
-    summary:
-      'High-throughput POS and inventory management desktop application packaged with Electron, featuring embedded SQLite storage and multi-user Local Area Network (LAN) synchronization.',
-    architecture: [
-      'Zero-cloud architecture with embedded SQLite database for ultra-low latency',
-      'Multi-device real-time sync across local network with conflict resolution',
-      'Integrated POS billing terminal with barcode scanner hardware support',
-      'Supplier debt tracking and customer ledger accounting modules',
-    ],
-    tech: ['Next.js', 'Express.js', 'SQLite', 'Electron', 'Tailwind CSS'],
+    tech: ['Next.js', 'PWA', 'Express 5', 'MongoDB', 'OSRM', 'VersaTiles', 'H3 Spatial Index'],
   },
   {
     id: 'vscode-portfolio',
-    name: 'VS Code Developer Portfolio',
-    category: 'personal',
-    categoryLabel: 'Interactive Web Application',
-    duration: '2026',
+    name: 'VSCode Theme Portfolio',
+    title: 'Interactive VS Code-Themed Developer Portfolio',
+    category: 'frontend',
+    categoryLabel: 'Frontend / Portfolio',
+    duration: 'Aug 15, 2026 – Aug 17, 2026',
     status: 'Live & Active',
     statusColor: 'text-sky-400 border-sky-500/20 bg-sky-500/10',
     summary:
-      'A faithful reproduction of the Visual Studio Code interface built on Next.js. Features a functional virtual file system, syntax highlighter, 20+ command terminal, and Gemini AI assistant.',
+      'Faithful, responsive reproduction of Visual Studio Code built on Next.js 16. Features virtual file explorer, syntax highlighter, 25+ command terminal, 32 themes, tour, and Gemini Copilot.',
     architecture: [
-      'Full virtual file hierarchy with tab state management and breadcrumb navigation',
-      'Interactive Unix-like terminal emulator with autocomplete and command history',
-      'Real-time Redis analytics layer tracking page impressions and reader reviews',
+      'Virtual file system with multi-tab state management, pointer reordering, and overflow controls',
+      'Interactive Unix-like terminal emulator with command autocomplete, history, and project inspectors',
+      'Real-time Redis analytics layer tracking page views, likes, and visitor reviews',
       'Context-aware Gemini AI assistant embedded in the editor sidebar',
+      'Dynamic theme engine supporting 32 VS Code dark and light themes with full contrast parity',
     ],
-    tech: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Zustand', 'Redis', 'Gemini API'],
+    tech: ['Next.js 16', 'TypeScript', 'React 19', 'Tailwind CSS', 'Zustand', 'Upstash Redis', 'Gemini API', 'Vercel'],
     link: 'https://mandeepiitp.tech',
+  },
+  {
+    id: 'theyneedhelp',
+    name: 'TheyNeedHelp',
+    title: 'Community Help & Case Resolution Platform',
+    category: 'fullstack',
+    categoryLabel: 'Full Stack / Community',
+    duration: 'Apr 7, 2025 – Apr 16, 2025',
+    status: 'Completed',
+    statusColor: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10',
+    summary:
+      'Full-stack community platform where people publish help requests, attach media, discover cases by location, collaborate through comments, and coordinate NGO/admin resolutions.',
+    architecture: [
+      'Passport authentication with email OTP verification and forgot-password recovery flows',
+      'Cloudinary media storage and Multer pipeline supporting high-res images and videos',
+      'Location and state-based discovery filtering connecting local cases to nearby NGOs',
+      'Multi-tier role authorization separating standard Users, verified NGOs, and Administrators',
+      'Case lifecycle workflow with resolution tracking and solved-case status flags',
+    ],
+    tech: ['Node.js', 'Express', 'MongoDB', 'Mongoose', 'EJS Mate', 'Passport', 'Cloudinary', 'Multer', 'Nodemailer'],
+    github: 'https://github.com/mandeep140/theyneedhelp',
+  },
+  {
+    id: 'listpro',
+    name: 'ListPro',
+    title: 'Full-Stack Listing & Review Platform',
+    category: 'fullstack',
+    categoryLabel: 'Full Stack / Marketplace',
+    duration: 'Mar 2, 2025 – Mar 3, 2025',
+    status: 'Completed',
+    statusColor: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10',
+    summary:
+      'Full-stack property and travel listing platform where authenticated users create, manage, review, and rate listings with strict ownership-based authorization.',
+    architecture: [
+      'Full CRUD listing infrastructure guarded by server-side Joi validation schemas',
+      'Ownership-based authorization middleware preventing unauthorized edits or deletions',
+      'Community review and 5-star rating system with reviewer-specific deletion permissions',
+      'Connect-Mongo session persistence across browser reboots and client sessions',
+      'Cloudinary asset pipeline with RESTful method-override for PUT and DELETE requests',
+    ],
+    tech: ['Node.js', 'Express', 'MongoDB', 'Mongoose', 'EJS Mate', 'Passport Local', 'Joi', 'Connect Mongo', 'Cloudinary'],
+    github: 'https://github.com/mandeep140/ListPro',
+  },
+  {
+    id: 'daily-news-provider',
+    name: 'Daily News Provider',
+    title: 'Automated Daily News Processing System',
+    category: 'automation',
+    categoryLabel: 'Automation / Python',
+    duration: 'Aug 2026 – Sep 25, 2026',
+    status: 'Private / Automation Project',
+    statusColor: 'text-amber-400 border-amber-500/20 bg-amber-500/10',
+    summary:
+      'Python-based automated news-processing system with scheduled GitHub Actions workflows, persistent seen-item tracking, and recurring digest delivery.',
+    architecture: [
+      'Automated daily digest and watch-based update workflows collecting news items',
+      'Persistent previously-seen item tracking avoiding duplicate alerts and digests',
+      'Automated JSON state management with Git-based versioning and state persistence',
+      'Cron-scheduled and event-driven pipeline execution via GitHub Actions workflows',
+    ],
+    tech: ['Python', 'GitHub Actions', 'JSON', 'Git Automation'],
   },
   {
     id: 'local-bazaar',
     name: 'Local Bazaar',
-    category: 'personal',
-    categoryLabel: 'Hyperlocal E-Commerce PWA',
+    title: 'Hyperlocal E-Commerce PWA',
+    category: 'fullstack',
+    categoryLabel: 'Full Stack / E-Commerce PWA',
     duration: 'Jun 2025 – Sep 2025',
     status: 'Completed Prototype',
     statusColor: 'text-amber-400 border-amber-500/20 bg-amber-500/10',
@@ -166,29 +218,91 @@ const projects: ProjectItem[] = [
       'Progressive Web App (PWA) architecture with offline caching and home screen install',
       'Web push notifications for continuous order lifecycle updates',
     ],
-    tech: ['Next.js', 'Node.js', 'MongoDB', 'Tailwind CSS', 'PWA'],
+    tech: ['Next.js', 'Node.js', 'MongoDB', 'Tailwind CSS', 'PWA', 'Push Notifications'],
+  },
+  {
+    id: 'the-production',
+    name: 'The Production',
+    title: 'Streaming Platform UI Concept',
+    category: 'frontend',
+    categoryLabel: 'Frontend / UI Concept',
+    duration: 'Apr 4, 2025 – Jun 4, 2025',
+    status: 'Independent Concept',
+    statusColor: 'text-sky-400 border-sky-500/20 bg-sky-500/10',
+    summary:
+      'Independent streaming-platform UI concept crafted with React 19 and Vite, focusing on advanced animations, smooth route transitions, and cinematic presentation.',
+    architecture: [
+      'Cinematic landing page with interactive content carousel and category sections',
+      'Fluid page and route transitions powered by GSAP and Framer Motion',
+      'Lenis smooth scrolling integration for seamless, inertial desktop navigation',
+      'Resilient client-side error boundaries and image preloading pipelines',
+    ],
+    tech: ['React 19', 'Vite', 'React Router', 'Tailwind CSS', 'GSAP', 'Framer Motion', 'Barba', 'Lenis'],
+    github: 'https://github.com/mandeep140/The-Production',
+  },
+  {
+    id: 'offline-todo',
+    name: 'Offline Todo',
+    title: 'Offline-First Todo PWA',
+    category: 'fullstack',
+    categoryLabel: 'PWA / Offline-First',
+    duration: 'Dec 31, 2025',
+    status: 'Completed',
+    statusColor: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10',
+    summary:
+      'Offline-first task management application focused on browser-side persistence, PWA installability, and instant local state interactions without network reliance.',
+    architecture: [
+      'Zero-latency local task mutations backed by browser storage persistence',
+      'Progressive Web App (PWA) manifest and caching service worker for desktop/mobile install',
+      'Clean task lifecycle workflows with instant filter and completion toggling',
+    ],
+    tech: ['Next.js', 'React', 'PWA Technologies', 'Web Storage API', 'Tailwind CSS'],
+  },
+  {
+    id: 'chaiwala',
+    name: 'Chaiwala',
+    title: 'Next.js Full-Stack Web Application',
+    category: 'fullstack',
+    categoryLabel: 'Full Stack / Web App',
+    duration: 'Jul 18, 2026 – Jul 19, 2026',
+    status: 'Deployed',
+    statusColor: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10',
+    summary:
+      'Next.js web application engineered with a responsive React frontend, MongoDB-backed data layer, bcryptjs password hashing, and authentication infrastructure.',
+    architecture: [
+      'Full-stack Next.js 16 App Router architecture with server and client components',
+      'MongoDB integration with Mongoose data modeling and schema validation',
+      'Authentication infrastructure with bcryptjs password hashing',
+      'Modular UI component hierarchy leveraging Tailwind CSS and Lucide icons',
+    ],
+    tech: ['Next.js 16', 'React 19', 'MongoDB', 'Mongoose', 'bcryptjs', 'Tailwind CSS', 'Shadcn/UI', 'Lucide React'],
+    github: 'https://github.com/mandeep140/chaiwala',
+    link: 'https://chaiwala-ten.vercel.app',
+  },
+  {
+    id: 'bachelors',
+    name: 'Bachelors',
+    title: 'Private Next.js Application',
+    category: 'fullstack',
+    categoryLabel: 'Full Stack / Private',
+    duration: 'Feb 16, 2026',
+    status: 'Private Project',
+    statusColor: 'text-amber-400 border-amber-500/20 bg-amber-500/10',
+    summary:
+      'Private Next.js web application featuring multi-page navigation, authentication functionality, and monthly date and reset management logic.',
+    architecture: [
+      'Multi-page application routing and structured layout hierarchy',
+      'Authentication and secure session handling mechanisms',
+      'Automated monthly date calculation and reset state cycles',
+      'Deployed on Vercel with responsive mobile and desktop presentation',
+    ],
+    tech: ['Next.js', 'React', 'JavaScript', 'Authentication', 'Vercel'],
   },
 ];
 
 const experience = [
   {
     id: 1,
-    role: 'Freelance Backend Engineer',
-    company: 'Quick Venue',
-    location: 'Remote',
-    period: 'Jun 2026 – Aug 2026',
-    badge: 'Contract',
-    description:
-      'Architected core backend REST services and database schemas for an AI-enabled venue and cafe reservation platform.',
-    keyPoints: [
-      'Engineered high-performance MongoDB schemas supporting complex multi-attribute queries for venues, catering menus, and vendor slots',
-      'Implemented JWT-based authentication pipelines with multi-tier role authorization (Administrators, Vendors, Customers)',
-      'Built automated quotation generation workflows and booking lifecycle state machines',
-    ],
-    tech: ['Express.js', 'MongoDB', 'Node.js', 'JWT', 'REST APIs'],
-  },
-  {
-    id: 2,
     role: 'Chief Technology Officer (CTO)',
     company: 'Showa',
     location: 'Bihar, India',
@@ -197,16 +311,50 @@ const experience = [
     description:
       'Directed full product engineering lifecycle for three commercial software deliverables across cloud, SaaS, and desktop platforms.',
     keyPoints: [
-      'Led dev team in system architecture, code reviews, sprint planning, and client milestone delivery',
-      'Delivered Showa Track CRM and Showa Store Management desktop software from concept to customer rollout',
+      'Led dev team in system architecture, code reviews, sprint planning, and client milestone delivery across 3 major SaaS applications',
+      'Showa Track: Engineered Out-of-Home (OOH) agency CRM with automated proposals, booking conflict detection, and client agreement workflows',
+      'Showa Store Management: Built offline-first desktop POS & inventory system with SQLite and multi-device LAN synchronization packaged in Electron',
+      'ADJMD (Built under Showa): Shipped full-stack ad inventory platform with RBAC, ImageKit media CDN, and MongoDB optimization in 1 month',
       'Established engineering standards for database normalization, API design, and CI/CD automated deployments',
-      'Interfaced directly with stakeholders to translate business operational bottlenecks into software solutions',
     ],
-    tech: ['Next.js', 'Express.js', 'MongoDB', 'SQLite', 'Electron', 'Tailwind CSS'],
+    tech: ['Next.js', 'Express.js', 'MongoDB', 'SQLite', 'Electron', 'Tailwind CSS', 'NextAuth', 'ImageKit'],
+  },
+  {
+    id: 2,
+    role: 'Freelance Developer',
+    company: 'Quick Venue',
+    location: 'Remote',
+    period: 'Jun 2026 – Aug 2026',
+    badge: 'Contract',
+    description:
+      'Architected core backend REST services and database schemas for an AI-enabled venue and cafe reservation platform.',
+    keyPoints: [
+      'Quick Venue: Engineered high-performance MongoDB schemas supporting complex multi-attribute queries for venues, catering menus, and vendor slots',
+      'Implemented JWT-based authentication pipelines with multi-tier role authorization (Administrators, Vendors, Customers)',
+      'Built automated quotation generation workflows and booking lifecycle state machines',
+    ],
+    tech: ['Express.js', 'MongoDB', 'Node.js', 'JWT', 'REST APIs'],
   },
   {
     id: 3,
-    role: 'Independent Full Stack Developer',
+    role: 'Core Technical Member (WebWiser)',
+    company: 'Student Technical Council, IIT Patna',
+    location: 'IIT Patna, India',
+    period: 'Sep 2025 – Present',
+    badge: 'Council',
+    description:
+      'Engineering and maintaining campus technical systems and official portals for premier college technical festivals.',
+    keyPoints: [
+      'STC Hybrid Programs: Architected and actively maintain backend services for the STC IITP Hybrid campus portal',
+      'Xenith Technical Fest: Developed high-traffic event platforms for Xenith and Phoenix technical festivals with zero downtime',
+      'Served as technical crew lead for STC Immersion events, conducting workshops on web dev and deployment',
+      'Share web development and DevOps resources and knowledge across official council channels',
+    ],
+    tech: ['Next.js', 'React', 'Node.js', 'MongoDB', 'Tailwind CSS', 'DevOps'],
+  },
+  {
+    id: 4,
+    role: 'Freelance Developer (Independent)',
     company: 'Freelance Practice',
     location: 'Remote',
     period: 'Sep 2025 – Present',
@@ -219,22 +367,6 @@ const experience = [
       'Actively accepting contracts for SaaS development, API integrations, and backend architecture',
     ],
     tech: ['Next.js', 'React', 'MongoDB', 'Express.js', 'Tailwind CSS', 'SEO'],
-  },
-  {
-    id: 4,
-    role: 'Core Technical Member (WebWiser)',
-    company: 'Student Technical Council, IIT Patna',
-    location: 'IIT Patna, India',
-    period: 'Sep 2025 – Present',
-    badge: 'Community',
-    description:
-      'Engineering and maintaining campus technical systems and official portals for premier college technical festivals.',
-    keyPoints: [
-      'Architected and actively maintain backend services for the STC IITP Hybrid campus portal',
-      'Developed high-traffic event platforms for Xenith and Phoenix technical festivals with zero downtime',
-      'Served as technical crew lead for STC Immersion events, conducting workshops on web dev and deployment',
-    ],
-    tech: ['Next.js', 'React', 'Node.js', 'MongoDB', 'DevOps'],
   },
 ];
 
@@ -708,10 +840,11 @@ export default function UserFriendlyPortfolio() {
 
             <div className="flex items-center gap-1 p-1 rounded-lg bg-[#141417] border border-white/[0.06] self-start sm:self-auto overflow-x-auto max-w-full">
               {[
-                { id: 'all', label: 'All (5)' },
-                { id: 'client', label: 'Client SaaS' },
-                { id: 'desktop', label: 'Desktop & LAN' },
-                { id: 'personal', label: 'Personal' },
+                { id: 'all', label: 'All (11)' },
+                { id: 'ai', label: 'AI & Safety' },
+                { id: 'fullstack', label: 'Full Stack' },
+                { id: 'frontend', label: 'Frontend & UI' },
+                { id: 'automation', label: 'Automation' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -742,21 +875,38 @@ export default function UserFriendlyPortfolio() {
                           {project.categoryLabel}
                         </span>
                         <span className="text-[11px] font-mono text-[#71717a]">{project.duration}</span>
+                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${project.statusColor}`}>
+                          {project.status}
+                        </span>
                       </div>
                       <h3 className="text-xl font-semibold text-white tracking-tight">{project.name}</h3>
+                      <div className="text-xs text-[#0071e3] font-mono mt-0.5">{project.title}</div>
                     </div>
 
-                    {project.link && (
-                      <a
-                        href={project.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-[#18181b] hover:bg-[#202024] text-[#a1a1aa] hover:text-white border border-white/[0.08] transition-colors"
-                        title="Visit Live URL"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    )}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {project.github && (
+                        <a
+                          href={project.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg bg-[#18181b] hover:bg-[#202024] text-[#a1a1aa] hover:text-white border border-white/[0.08] transition-colors"
+                          title="View GitHub Repository"
+                        >
+                          <Github className="w-4 h-4" />
+                        </a>
+                      )}
+                      {project.link && (
+                        <a
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg bg-[#18181b] hover:bg-[#202024] text-[#a1a1aa] hover:text-white border border-white/[0.08] transition-colors"
+                          title="Visit Live Application"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-xs sm:text-sm text-[#a1a1aa] leading-relaxed mb-5">

@@ -462,7 +462,7 @@ export default function TitleBar() {
       },
       {
         label: 'About VS Code Portfolio',
-        action: () => showToast('VS Code Portfolio v2.1.1 — Built by Mandeep Nagar'),
+        action: () => showToast('VS Code Portfolio v3.0.0 — Built by Mandeep Nagar'),
       },
     ],
   };
@@ -535,7 +535,7 @@ export default function TitleBar() {
     },
     {
       label: 'About Portfolio',
-      action: () => showToast('VS Code Portfolio v2.1.1 — Built by Mandeep Nagar'),
+      action: () => showToast('VS Code Portfolio v3.0.0 — Built by Mandeep Nagar'),
     },
   ];
 
