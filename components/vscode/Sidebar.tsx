@@ -935,7 +935,7 @@ function SettingsPanel() {
               }`}>
               <div>
                 <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>Shell</p>
-                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v3.0.0</p>
+                <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Portfolio Terminal v3.0.1</p>
               </div>
               <AlignJustify className="w-4 h-4 text-[#858585]" />
             </div>
@@ -945,7 +945,7 @@ function SettingsPanel() {
         <div className={`pt-3 border-t ${isLight ? 'border-[#e0e0e0]' : 'border-[#3c3c3c]'}`}>
           <p className={`text-[11px] uppercase tracking-wider mb-2 ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>About</p>
           <p className={`text-[12px] font-medium ${isLight ? 'text-[#24292f]' : 'text-[#cccccc]'}`}>VS Code Portfolio</p>
-          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 3.0.0</p>
+          <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Version 3.0.1</p>
           <p className={`text-[11px] ${isLight ? 'text-[#777777]' : 'text-[#858585]'}`}>Next.js 16 / React 19 / Turbopack</p>
           <button
             type="button"

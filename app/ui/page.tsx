@@ -565,13 +565,12 @@ export default function UserFriendlyPortfolio() {
     <div className="min-h-screen bg-[#09090b] text-[#d4d4d8] font-sans antialiased selection:bg-[#0071e3] selection:text-white relative">
 
       <div
-        className="fixed inset-0 pointer-events-none z-0 opacity-70"
+        className="absolute inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.16) 0.20px, transparent 1.25px)',
           backgroundSize: '24px 24px',
         }}
       />
-      <div className="fixed top-0 left-0 right-0 h-64 bg-gradient-to-b from-[#09090b] via-transparent to-transparent pointer-events-none z-0" />
 
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#09090b]/85 border-b border-white/[0.08] transition-colors">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
